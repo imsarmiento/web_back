@@ -5,12 +5,12 @@ const router = new express.Router();
 router.get("/:id", async (req, res) => {
     try {
         const regla = await Regla.findById(req.params.id);
-        if (!evento) {
+        if (!regla) {
             return res.status(404).send("No hubo coincidencia de regla");
         }
         return res.status(200).send(regla);
     } catch (error) {
-        res.status(500).send();
+        res.status(500).send(error);
     }
 });
 
@@ -35,9 +35,6 @@ router.post("", async (req, resp) => {
 
 router.patch("/:id", async (req, res) => {
     try {
-        if (!Regla.fieldsNotAllowedUpdates(req.body)) {
-            return res.status(400).send({error: "Actualizacion invalida"});
-        }
         const regla = await Regla.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true,
@@ -46,20 +43,20 @@ router.patch("/:id", async (req, res) => {
             return res.status(404).send("No hubo coincidencia de regla");
         }
         return res.send(regla);
-    } catch (e) {
-        return res.status(400).send(e);
+    } catch (error) {
+        return res.status(400).send(error);
     }
 });
 
 router.delete("/:id", async (req, res) => {
     try {
         const regla = await Regla.findByIdAndDelete(req.params.id);
-        if (!evento) {
+        if (!regla) {
             return res.status(404).send("No hubo coincidencia de regla");
         }
-        res.send(evento);
+        res.send(regla);
     } catch (error) {
-        return res.status(500).send();
+        return res.status(500).send(error);
     }
 });
 
