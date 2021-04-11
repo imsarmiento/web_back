@@ -21,4 +21,6 @@ const regglaSchema = new Schema({
     },
 });
 
+const Regla = mongoose.model("Regla", regglaSchema);
+
 module.exports = Regla;
