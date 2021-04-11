@@ -18,6 +18,12 @@ const usuarioSchema = new Schema({
     required: true,
     lowercase: true,
   },
+  contrasena: {
+    type: String,
+    trim: true,
+    required: true,
+    lowercase: true,
+  },
   correo: {
     type: String,
     trim: true,

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 var Schema = mongoose.Schema;
 
-const regglaSchema = new Schema({
+const reglaSchema = new Schema({
     unidad: {
         type: Number,
         required: false,
@@ -21,6 +21,6 @@ const regglaSchema = new Schema({
     },
 });
 
-const Regla = mongoose.model("Regla", regglaSchema);
+const Regla = mongoose.model("Regla", reglaSchema);
 
 module.exports = Regla;

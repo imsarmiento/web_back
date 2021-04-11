@@ -19,11 +19,13 @@ const eventoSchema = new Schema({
         type: String,
         trim: true,
         required: true,
+        lowercase: true,
     },
     descripcion: {
         type: String,
         trim: true,
         required: true,
+        lowercase: true,
     },
     diaInicio: {
         type: Date,
@@ -61,6 +63,7 @@ const eventoSchema = new Schema({
         type: String,
         trim: true,
         required: true,
+        lowercase: true,
     },
     reglas: {
         type: [

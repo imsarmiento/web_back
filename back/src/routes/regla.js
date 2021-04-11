@@ -2,6 +2,13 @@ const express = require("express");
 const Regla = require("../models/regla-model");
 const router = new express.Router();
 
+/**
+ * REGLA
+ */
+
+/**
+ *  Devuelve todos las reglas con el id especificado
+ */
 router.get("/:id", async (req, res) => {
     try {
         const regla = await Regla.findById(req.params.id);
@@ -14,7 +21,10 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-router.get("", async (req, res) => {
+/**
+ *  Devuelve todas las reglas
+ */
+router.get("/", async (req, res) => {
     try {
         const reglas = await Regla.find({});
         return res.send(reglas);
@@ -23,7 +33,10 @@ router.get("", async (req, res) => {
     }
 });
 
-router.post("", async (req, resp) => {
+/**
+ * Crea una regla
+ */
+router.post("/", async (req, resp) => {
     try {
         const regla = new Regla(req.body);
         await regla.save();
@@ -33,6 +46,9 @@ router.post("", async (req, resp) => {
     }
 });
 
+/**
+ *  Modifica una regla con el id especificado
+ */
 router.patch("/:id", async (req, res) => {
     try {
         const regla = await Regla.findByIdAndUpdate(req.params.id, req.body, {
@@ -48,6 +64,9 @@ router.patch("/:id", async (req, res) => {
     }
 });
 
+/**
+ * Elimina una regla con el id especificado
+ */
 router.delete("/:id", async (req, res) => {
     try {
         const regla = await Regla.findByIdAndDelete(req.params.id);

@@ -3,6 +3,13 @@ const Evento = require("../models/evento-model");
 const Regla = require("../models/regla-model")
 const router = new express.Router();
 
+/**
+ * EVENTO
+ */
+
+/**
+ *  Devuelve todos los evento con el id especificado
+ */
 router.get("/:id", async (req, res) => {
     try {
         const evento = await Evento.findById(req.params.id);
@@ -15,7 +22,10 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-router.get("", async (req, res) => {
+/**
+ *  Devuelve todos los eventos
+ */
+router.get("/", async (req, res) => {
     try {
         const eventos = await Evento.find({});
         return res.send(eventos);
@@ -24,7 +34,10 @@ router.get("", async (req, res) => {
     }
 });
 
-router.post("", async (req, resp) => {
+/**
+ * Crea un evento
+ */
+router.post("/", async (req, resp) => {
     try {
         const evento = new Evento(req.body);
         await evento.save();
@@ -34,6 +47,9 @@ router.post("", async (req, resp) => {
     }
 });
 
+/**
+ *  Modifica un evento con el id especificado
+ */
 router.patch("/:id", async (req, res) => {
     try {
         const evento = await Evento.findByIdAndUpdate(req.params.id, req.body, {
@@ -49,6 +65,9 @@ router.patch("/:id", async (req, res) => {
     }
 });
 
+/**
+ * Elimina un evento con el id especificado
+ */
 router.delete("/:id", async (req, res) => {
     try {
         const evento = await Evento.findByIdAndDelete(req.params.id);
@@ -61,6 +80,9 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
+/**
+ * Devuelve el evento con el id especificado y sus reglas poblados
+ */
 router.get("/:id/reglas", async (req, res) => {
     try {
         const evento = await Evento.findById(req.params.id).populate("reglas");
@@ -73,6 +95,9 @@ router.get("/:id/reglas", async (req, res) => {
     }
 });
 
+/**
+ *  Modifica un evento con el id especificado, agregandole una regla existente
+ */
 router.patch("/:id/reglas/:idRegla", async (req, res) => {
     try {
         const evento = await Evento.findById(req.params.id);

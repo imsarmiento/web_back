@@ -8,6 +8,24 @@ const router = new express.Router();
  */
 
 /**
+ * Retorna los datos del usuario si sus credenciales son correctos
+ */
+router.get("/login", async (req, res) => {
+  try {
+    const usuario = await Usuario.find({correo:req.body.correo});
+    if (!usuario) {
+      return res.status(404).send("El usuario no esta registrado");
+    }
+    if(!usuario.contrasena==req.body.contrasena){
+      return res.status(401).send("Los datos de autenticacion son incorrectos");
+    }
+     res.send(usuario);
+  } catch (error) {
+    return res.status(500).send();
+  }
+});
+
+/**
  * Crea un usuario
  */
 router.post("/", async (req, resp) => {
@@ -120,7 +138,7 @@ router.patch("/:idU/eventos/:idE", async (req, res) => {
 });
 
 /**
- * Elimina un usuario
+ * Elimina un usuario con el id especificado
  */
 router.delete("/:id", async (req, res) => {
   try {

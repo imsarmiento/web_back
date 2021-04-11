@@ -211,7 +211,7 @@ router.patch("/:idG/eventos/:idE", async (req, res) => {
 });
 
 /**
- * Elimina un grupo
+ * Elimina un grupo con el id especificado
  */
 router.delete("/:id", async (req, res) => {
   try {
