@@ -41,7 +41,7 @@ router.get("/:id", async (req, res) => {
     if (!grupo) {
       return res.status(404).send("No existe un grupo con el id especificado");
     }
-    return res.status(200).send(equipo);
+    return res.status(200).send(grupo);
   } catch (error) {
     res.status(500).send();
   }
