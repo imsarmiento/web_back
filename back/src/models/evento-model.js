@@ -4,7 +4,7 @@ var Schema = mongoose.Schema;
 
 const frecuencias = [
     "sinRepetir",
-    "diraria",
+    "diaria",
     "semanal",
     "mensual",
 ]
@@ -69,12 +69,6 @@ const eventoSchema = new Schema({
                 ref: "Regla",
             },
         ],
-        validate(v) {
-            const isValid = Array.isArray(v) && v.length > 0;
-            if (!isValid) {
-                throw new Error(`Debe tener al menos una regla`);
-            }
-        },
     },
 });
 

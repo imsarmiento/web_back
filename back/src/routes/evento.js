@@ -18,8 +18,8 @@ router.get("", async (req, res) => {
     try {
         const eventos = await Evento.find({});
         return res.send(eventos);
-    } catch (e) {
-        res.status(500).send();
+    } catch (error) {
+        res.status(500).send(error);
     }
 });
 
@@ -35,9 +35,6 @@ router.post("", async (req, resp) => {
 
 router.patch("/:id", async (req, res) => {
     try {
-        if (!Evento.fieldsNotAllowedUpdates(req.body)) {
-            return res.status(400).send({error: "Actualizacion invalida"});
-        }
         const evento = await Evento.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true,
@@ -46,8 +43,8 @@ router.patch("/:id", async (req, res) => {
             return res.status(404).send("No hubo coincidencia de evento");
         }
         return res.send(evento);
-    } catch (e) {
-        return res.status(400).send(e);
+    } catch (error) {
+        return res.status(400).send(error);
     }
 });
 
@@ -59,7 +56,7 @@ router.delete("/:id", async (req, res) => {
         }
         res.send(evento);
     } catch (error) {
-        return res.status(500).send();
+        return res.status(500).send(error);
     }
 });
 
