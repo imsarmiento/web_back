@@ -1,5 +1,6 @@
 const express = require("express");
 const Usuario = require("../models/usuario-model");
+const Evento = require("../models/evento-model");
 const router = new express.Router();
 
 /**
@@ -39,8 +40,25 @@ router.get("/", async (req, res) => {
  */
 router.get("/:id", async (req, res) => {
   try {
-    console.log("entra id");
     const usuario = await Usuario.findById(req.params.id);
+    if (!usuario) {
+      return res
+        .status(404)
+        .send("No existe un usuario con el id especificado");
+    }
+    return res.status(200).send(usuario);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send();
+  }
+});
+
+/**
+ * Devuelve el usuario con el id especificado y sus eventos poblados
+ */
+router.get("/:id/eventos", async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.params.id).populate("eventos");
     if (!usuario) {
       return res
         .status(404)
@@ -72,6 +90,31 @@ router.patch("/:id", async (req, res) => {
     }
     return res.send(usuario);
   } catch (e) {
+    return res.status(400).send(e);
+  }
+});
+
+/**
+ *  Modifica un usuario con el id especificado, agregandole un evento existente
+ */
+router.patch("/:idU/eventos/:idE", async (req, res) => {
+  // Se pueden pasar por parametro los campos no modificables
+  try {
+    const usuario = await Usuario.findById(req.params.idU);
+    if (!usuario) {
+      return res
+        .status(404)
+        .send("No existe un usuario con el id especificado");
+    }
+    const evento = await Evento.findById(req.params.idE);
+    if (!evento) {
+      return res.status(404).send("No existe un evento con el id especificado");
+    }
+    usuario.eventos.push(evento.id);
+    usuario.save();
+    return res.send(usuario);
+  } catch (e) {
+    console.log(e);
     return res.status(400).send(e);
   }
 });
