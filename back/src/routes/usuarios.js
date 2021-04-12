@@ -12,11 +12,11 @@ const router = new express.Router();
  */
 router.get("/login", async (req, res) => {
   try {
-    const usuario = await Usuario.find({correo:req.body.correo});
+    const usuario = await Usuario.find({ correo: req.body.correo });
     if (!usuario) {
       return res.status(404).send("El usuario no esta registrado");
     }
-    if(!(usuario[0].contrasena===req.body.contrasena)){
+    if (!(usuario[0].contrasena === req.body.contrasena)) {
       return res.status(401).send("Los datos de autenticacion son incorrectos");
     }
     res.send(usuario);
@@ -149,6 +149,66 @@ router.delete("/:id", async (req, res) => {
     res.send(usuario);
   } catch (error) {
     return res.status(500).send();
+  }
+});
+
+/**
+ * Devuelve el la disponibilidad del usuario con el id especificado
+ */
+router.get("/:id/disponibilidad", async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.params.id).populate({
+      path: "eventos",
+      populate: {
+        path: "reglas",
+      },
+      options: { sort: { diaInicio: 1 } },
+    });
+    if (!usuario) {
+      return res
+        .status(404)
+        .send("No existe un usuario con el id especificado");
+    }
+    let disp = [];
+    const today = new Date();
+    let future = new Date();
+    future.setFullYear(future.getFullYear() + 5);
+    disp.push({ inicio: today, fin: future });
+    usuario.eventos.forEach((evento) => {
+      const diaInicio = new Date(evento.diaInicio);
+      const diaFin = new Date(evento.diaFin);
+      // NO tomar en cuenta los eventos anteriores al dia de hoy
+      if (diaInicio > today) {
+        // Se consideran primero los casos en los que no hay una frecuencia
+        if (evento.frecuencia === "sinRepetir") {
+          for (var j = 0; j < evento.reglas.length; j++) {
+            let registrado = false;
+            const regla = evento.reglas[j];
+            const reglaInicio = new Date(regla.horaInicio);
+            const reglaFin = new Date(regla.horaFin);
+            for (var i = 0; i < disp.length; i++) {
+              let dis = disp[i];
+              if (dis.fin > reglaInicio) {
+                const temp = dis.fin;
+                dis.fin = reglaInicio;
+                const new_dis = { inicio: reglaFin, fin: temp };
+                disp.splice(i + 1, 0, new_dis);
+                registrado = true;
+                break;
+              }
+            }
+            if (registrado === false) {
+              disp.push({ inicio: reglaInicio, fin: reglaFin });
+            }
+          }
+        }
+      }
+    });
+    console.log(disp);
+    return res.status(200).send(usuario);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send();
   }
 });
 
