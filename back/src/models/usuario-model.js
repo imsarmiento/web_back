@@ -20,9 +20,7 @@ const usuarioSchema = new Schema({
   },
   contrasena: {
     type: String,
-    trim: true,
     required: true,
-    lowercase: true,
   },
   correo: {
     type: String,

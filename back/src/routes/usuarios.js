@@ -16,10 +16,10 @@ router.get("/login", async (req, res) => {
     if (!usuario) {
       return res.status(404).send("El usuario no esta registrado");
     }
-    if(!usuario.contrasena==req.body.contrasena){
+    if(!(usuario[0].contrasena===req.body.contrasena)){
       return res.status(401).send("Los datos de autenticacion son incorrectos");
     }
-     res.send(usuario);
+    res.send(usuario);
   } catch (error) {
     return res.status(500).send();
   }
