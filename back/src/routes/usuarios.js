@@ -90,6 +90,31 @@ router.get("/:id/eventos", async (req, res) => {
 });
 
 /**
+ * Devuelve el usuario con el id especificado y sus eventos poblados con sus reglas pobladas
+ */
+router.get("/:id/eventos_reglas", async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.params.id).populate({
+      path: "eventos",
+      populate: {
+        path: "reglas",
+        options: { sort: { unidad: 1 } },
+      },
+      options: { sort: { diaInicio: 1 } },
+    });
+    if (!usuario) {
+      return res
+        .status(404)
+        .send("No existe un usuario con el id especificado");
+    }
+    return res.status(200).send(usuario);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send();
+  }
+});
+
+/**
  *  Modifica un usuario con el id especificado
  */
 router.patch("/:id", async (req, res) => {
@@ -161,6 +186,7 @@ router.get("/:id/disponibilidad", async (req, res) => {
       path: "eventos",
       populate: {
         path: "reglas",
+        options: { sort: { unidad: 1 } },
       },
       options: { sort: { diaInicio: 1 } },
     });
@@ -170,19 +196,19 @@ router.get("/:id/disponibilidad", async (req, res) => {
         .send("No existe un usuario con el id especificado");
     }
     let disp = [];
-    const today = new Date();
+    let past = new Date();
     let future = new Date();
+    past.setFullYear(past.getFullYear() - 5);
     future.setFullYear(future.getFullYear() + 5);
-    disp.push({ inicio: today, fin: future });
+    disp.push({ inicio: past, fin: future });
     usuario.eventos.forEach((evento) => {
       const diaInicio = new Date(evento.diaInicio);
       const diaFin = new Date(evento.diaFin);
       // NO tomar en cuenta los eventos anteriores al dia de hoy
-      if (diaInicio > today) {
+      if (true) {
         // Se consideran primero los casos en los que no hay una frecuencia
         if (evento.frecuencia === "sinRepetir") {
           for (var j = 0; j < evento.reglas.length; j++) {
-            let registrado = false;
             const regla = evento.reglas[j];
             const reglaInicio = new Date(regla.horaInicio);
             const reglaFin = new Date(regla.horaFin);
@@ -193,19 +219,71 @@ router.get("/:id/disponibilidad", async (req, res) => {
                 dis.fin = reglaInicio;
                 const new_dis = { inicio: reglaFin, fin: temp };
                 disp.splice(i + 1, 0, new_dis);
-                registrado = true;
                 break;
               }
             }
-            if (registrado === false) {
-              disp.push({ inicio: reglaInicio, fin: reglaFin });
+          }
+        } else if (evento.frecuencia === "semanal") {
+          for (var j = 0; j < evento.reglas.length; j++) {
+            const regla = evento.reglas[j];
+            let diaIterador = regla.horaInicio;
+            let diaIteradorFin = regla.horaFin;
+            while (diaIterador < diaFin) {
+              for (var i = 0; i < disp.length; i++) {
+                let dis = disp[i];
+                if (dis.fin > diaIterador) {
+                  const temp = dis.fin;
+                  dis.fin = diaIterador;
+                  const new_dis = { inicio: diaIteradorFin, fin: temp };
+                  disp.splice(i + 1, 0, new_dis);
+                  break;
+                }
+              }
+              diaIterador = new Date(
+                diaIterador.getTime() + 7 * 24 * 60 * 60 * 1000
+              );
+              diaIteradorFin = new Date(
+                diaIterador.getTime() + 7 * 24 * 60 * 60 * 1000
+              );
+            }
+          }
+        } else if (evento.frecuencia === "mensual") {
+          for (var j = 0; j < evento.reglas.length; j++) {
+            const regla = evento.reglas[j];
+            let diaIterador = regla.horaInicio;
+            //console.log("diaIterador", diaIterador);
+            //console.log("diaFin", diaFin);
+            let diaIteradorFin = regla.horaFin;
+            while (diaIterador < diaFin) {
+              for (var i = 0; i < disp.length; i++) {
+                let dis = disp[i];
+                //console.log("dis.fin", dis.fin);
+                //console.log("diaIterador", diaIterador);
+                if (dis.fin > diaIterador) {
+                  //console.log("entra");
+                  //console.log("diaIterador", diaIterador);
+                  //console.log("dis a modificar", dis);
+                  const temp = dis.fin;
+                  dis.fin = diaIterador;
+                  //console.log("antes", disp);
+                  const new_dis = { inicio: diaIteradorFin, fin: temp };
+                  disp.splice(i + 1, 0, new_dis);
+                  //console.log("despues", disp);
+                  break;
+                }
+              }
+              diaIterador = new Date(diaIterador.getTime());
+              diaIterador.setMonth((diaIterador.getMonth() + 1) % 12);
+              //console.log(diaIterador);
+              diaIteradorFin = new Date(diaIteradorFin.getTime());
+              diaIteradorFin.setMonth((diaIteradorFin.getMonth() + 1) % 12);
             }
           }
         }
       }
+      //console.log(disp);
     });
-    console.log(disp);
-    return res.status(200).send(usuario);
+    return res.status(200).send(disp);
   } catch (error) {
     console.log(error);
     res.status(500).send();
