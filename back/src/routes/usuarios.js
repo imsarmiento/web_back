@@ -10,7 +10,7 @@ const router = new express.Router();
 /**
  * Retorna los datos del usuario si sus credenciales son correctos
  */
-router.get("/login", async (req, res) => {
+router.put("/login", async (req, res) => {
   try {
     const usuario = await Usuario.find({ correo: req.body.correo });
     if (!usuario) {
