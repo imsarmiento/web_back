@@ -10,18 +10,21 @@ const router = new express.Router();
 /**
  * Retorna los datos del usuario si sus credenciales son correctos
  */
-router.put("/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
-    const usuario = await Usuario.find({ correo: req.body.correo });
+    const usuario = await Usuario.findOne({ correo: req.body.correo });
+    console.log(usuario);
     if (!usuario) {
-      return res.status(404).send("El usuario no esta registrado");
+      return res.status(401).send({ error: "El usuario no esta registrado" });
     }
-    if (!(usuario[0].contrasena === req.body.contrasena)) {
-      return res.status(401).send("Los datos de autenticacion son incorrectos");
+    if (!(usuario.contrasena === req.body.contrasena)) {
+      return res
+        .status(401)
+        .send({ error: "La contraseña ingresada es incorrecta" });
     }
     res.send(usuario);
   } catch (error) {
-    return res.status(500).send();
+    return res.status(500).send({ error: "Error desconocido" });
   }
 });
 
