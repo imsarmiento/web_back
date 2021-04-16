@@ -199,7 +199,7 @@ router.get("/:id/disponibilidad", async (req, res) => {
         let future = new Date();
         past.setFullYear(past.getFullYear() - 5);
         future.setFullYear(future.getFullYear() + 5);
-        disp.push({inicio: past, fin: future});
+        disp.push({start: past, end: future});
         usuario.eventos.forEach((evento) => {
             const diaInicio = new Date(evento.diaInicio);
             const diaFin = new Date(evento.diaFin);
@@ -216,7 +216,7 @@ router.get("/:id/disponibilidad", async (req, res) => {
                             if (dis.fin > reglaInicio) {
                                 const temp = dis.fin;
                                 dis.fin = reglaInicio;
-                                const new_dis = {inicio: reglaFin, fin: temp};
+                                const new_dis = {start: reglaFin, end: temp};
                                 disp.splice(i + 1, 0, new_dis);
                                 break;
                             }
@@ -233,7 +233,7 @@ router.get("/:id/disponibilidad", async (req, res) => {
                                 if (dis.fin > diaIterador) {
                                     const temp = dis.fin;
                                     dis.fin = diaIterador;
-                                    const new_dis = {inicio: diaIteradorFin, fin: temp};
+                                    const new_dis = {start: diaIteradorFin, end: temp};
                                     disp.splice(i + 1, 0, new_dis);
                                     break;
                                 }
@@ -265,7 +265,7 @@ router.get("/:id/disponibilidad", async (req, res) => {
                                     const temp = dis.fin;
                                     dis.fin = diaIterador;
                                     //console.log("antes", disp);
-                                    const new_dis = {inicio: diaIteradorFin, fin: temp};
+                                    const new_dis = {start: diaIteradorFin, end: temp};
                                     disp.splice(i + 1, 0, new_dis);
                                     //console.log("despues", disp);
                                     break;
@@ -282,6 +282,10 @@ router.get("/:id/disponibilidad", async (req, res) => {
             }
             //console.log(disp);
         });
+        let size = disp.length;
+        for(let i=0; i<size;i++){
+            Object.assign(disp[i], {id: i})
+        }
         return res.status(200).send(disp);
     } catch (error) {
         res.status(500).send({error: error});
