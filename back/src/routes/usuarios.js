@@ -11,328 +11,322 @@ const router = new express.Router();
  * Retorna los datos del usuario si sus credenciales son correctos
  */
 router.post("/login", async (req, res) => {
-  try {
-    const usuario = await Usuario.findOne({ correo: req.body.correo });
-    console.log(usuario);
-    if (!usuario) {
-      return res.status(401).send({ error: "El usuario no esta registrado" });
+    try {
+        const usuario = await Usuario.findOne({correo: req.body.correo});
+        console.log(usuario);
+        if (!usuario) {
+            return res.status(401).send({error: "El usuario no esta registrado"});
+        }
+        if (!(usuario.contrasena === req.body.contrasena)) {
+            return res
+                .status(401)
+                .send({error: "La contraseña ingresada es incorrecta"});
+        }
+        res.send(usuario);
+    } catch (error) {
+        return res.status(500).send({error: error});
     }
-    if (!(usuario.contrasena === req.body.contrasena)) {
-      return res
-        .status(401)
-        .send({ error: "La contraseña ingresada es incorrecta" });
-    }
-    res.send(usuario);
-  } catch (error) {
-    return res.status(500).send({ error: error });
-  }
 });
 
 /**
  * Crea un usuario
  */
 router.post("/", async (req, resp) => {
-  try {
-    const usuario = new Usuario(req.body);
-    await usuario.save();
-    return resp.status(201).send(usuario);
-  } catch (error) {
-    console.log(error);
-    resp.status(400).send({ error: "La contraseña ingresada es incorrecta" });
-  }
+    try {
+        const usuario = new Usuario(req.body);
+        await usuario.save();
+        return resp.status(201).send(usuario);
+    } catch (error) {
+        console.log(error);
+        resp.status(400).send({error: "La contraseña ingresada es incorrecta"});
+    }
 });
 
 /**
  *  Devuelve todos los usuarios
  */
 router.get("/", async (req, res) => {
-  try {
-    console.log("entra");
-    const usuarios = await Usuario.find({});
-    console.log(usuarios);
-    return res.send(usuarios);
-  } catch (error) {
-    res.status(500).send({ error: error });
-  }
+    try {
+        console.log("entra");
+        const usuarios = await Usuario.find({});
+        console.log(usuarios);
+        return res.send(usuarios);
+    } catch (error) {
+        res.status(500).send({error: error});
+    }
 });
 
 /**
  * Devuelve el usuario con el id especificado
  */
 router.get("/:id", async (req, res) => {
-  try {
-    const usuario = await Usuario.findById(req.params.id);
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
+    try {
+        const usuario = await Usuario.findById(req.params.id);
+        if (!usuario) {
+            return res
+                .status(404)
+                .send({error: "No existe un usuario con el id especificado"});
+        }
+        return res.status(200).send(usuario);
+    } catch (error) {
+        res.status(500).send({error: error});
     }
-    return res.status(200).send(usuario);
-  } catch (error) {
-    res.status(500).send({ error: error });
-  }
 });
 
 /**
  * Devuelve el usuario con el id especificado y sus eventos poblados
  */
 router.get("/:id/eventos", async (req, res) => {
-  try {
-    const usuario = await Usuario.findById(req.params.id).populate("eventos");
-    if (!usuario) {
-      return res
-        .status(404)
-        .send("No existe un usuario con el id especificado");
+    try {
+        const usuario = await Usuario.findById(req.params.id).populate("eventos");
+        if (!usuario) {
+            return res
+                .status(404)
+                .send("No existe un usuario con el id especificado");
+        }
+        return res.status(200).send(usuario);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({error: error});
     }
-    return res.status(200).send(usuario);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: error });
-  }
 });
 
 /**
  * Devuelve el usuario con el id especificado y sus eventos poblados con sus reglas pobladas
  */
 router.get("/:id/eventos_reglas", async (req, res) => {
-  try {
-    const usuario = await Usuario.findById(req.params.id).populate({
-      path: "eventos",
-      populate: {
-        path: "reglas",
-        options: { sort: { unidad: 1 } },
-      },
-      options: { sort: { diaInicio: 1 } },
-    });
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
+    try {
+        const usuario = await Usuario.findById(req.params.id).populate({
+            path: "eventos",
+            populate: {
+                path: "reglas",
+                options: {sort: {unidad: 1}},
+            },
+            options: {sort: {diaInicio: 1}},
+        });
+        if (!usuario) {
+            return res
+                .status(404)
+                .send({error: "No existe un usuario con el id especificado"});
+        }
+        return res.status(200).send(usuario);
+    } catch (error) {
+        res.status(500).send({error: error});
     }
-    return res.status(200).send(usuario);
-  } catch (error) {
-    res.status(500).send({ error: error });
-  }
 });
 
 /**
  *  Modifica un usuario con el id especificado
  */
 router.patch("/:id", async (req, res) => {
-  // Se pueden pasar por parametro los campos no modificables
-  try {
-    if (!Usuario.fieldsNotAllowedUpdates(req.body)) {
-      return res.status(400).send({ error: "Invalid updates" });
+    // Se pueden pasar por parametro los campos no modificables
+    try {
+        if (!Usuario.fieldsNotAllowedUpdates(req.body)) {
+            return res.status(400).send({error: "Invalid updates"});
+        }
+        const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true,
+        });
+        if (!usuario) {
+            return res
+                .status(404)
+                .send({error: "No existe un usuario con el id especificado"});
+        }
+        return res.send(usuario);
+    } catch (error) {
+        return res.status(400).send({error: error});
     }
-    const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
-    }
-    return res.send(usuario);
-  } catch (error) {
-    return res.status(400).send({ error: error });
-  }
 });
 
 /**
  *  Modifica un usuario con el id especificado, agregandole un evento existente
  */
 router.patch("/:idU/eventos/:idE", async (req, res) => {
-  // Se pueden pasar por parametro los campos no modificables
-  try {
-    const usuario = await Usuario.findById(req.params.idU);
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
+    // Se pueden pasar por parametro los campos no modificables
+    try {
+        const usuario = await Usuario.findById(req.params.idU);
+        if (!usuario) {
+            return res
+                .status(404)
+                .send({error: "No existe un usuario con el id especificado"});
+        }
+        const evento = await Evento.findById(req.params.idE);
+        if (!evento) {
+            return res
+                .status(404)
+                .send({error: "No existe un evento con el id especificado"});
+        }
+        usuario.eventos.push(evento.id);
+        usuario.save();
+        return res.send(usuario);
+    } catch (error) {
+        return res.status(400).send({error: error});
     }
-    const evento = await Evento.findById(req.params.idE);
-    if (!evento) {
-      return res
-        .status(404)
-        .send({ error: "No existe un evento con el id especificado" });
-    }
-    usuario.eventos.push(evento.id);
-    usuario.save();
-    return res.send(usuario);
-  } catch (error) {
-    return res.status(400).send({ error: error });
-  }
 });
 
 /**
  * Elimina un usuario con el id especificado
  */
 router.delete("/:id", async (req, res) => {
-  try {
-    const usuario = await Usuario.findByIdAndDelete(req.params.id);
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
+    try {
+        const usuario = await Usuario.findByIdAndDelete(req.params.id);
+        if (!usuario) {
+            return res
+                .status(404)
+                .send({error: "No existe un usuario con el id especificado"});
+        }
+        res.send(usuario);
+    } catch (error) {
+        return res.status(500).send({error: error});
     }
-    res.send(usuario);
-  } catch (error) {
-    return res.status(500).send({ error: error });
-  }
 });
 
 /**
  * Devuelve el la disponibilidad del usuario con el id especificado
  */
 router.get("/:id/disponibilidad", async (req, res) => {
-  try {
-    const usuario = await Usuario.findById(req.params.id).populate({
-      path: "eventos",
-      populate: {
-        path: "reglas",
-        options: { sort: { unidad: 1 } },
-      },
-      options: { sort: { diaInicio: 1 } },
-    });
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
-    }
-    let disp = [];
-    let past = new Date("January 1, 2021 00:00:00");
-    let future = new Date("January 1, 2022 00:00:00");
-    disp.push({ start: past, end: future });
-    usuario.eventos.forEach((evento) => {
-      const diaInicio = new Date(evento.diaInicio);
-      const diaFin = new Date(evento.diaFin);
-      // NO tomar en cuenta los eventos anteriores al dia de hoy
-      if (true) {
-        // Se consideran primero los casos en los que no hay una frecuencia
-        if (evento.frecuencia === "sinRepetir") {
-          for (var j = 0; j < evento.reglas.length; j++) {
-            const regla = evento.reglas[j];
-            const reglaInicio = new Date(regla.horaInicio);
-            const reglaFin = new Date(regla.horaFin);
-            for (var i = 0; i < disp.length; i++) {
-              let dis = disp[i];
-              if (dis.end > reglaInicio) {
-                const temp = dis.end;
-                dis.end = reglaInicio;
-                const new_dis = { start: reglaFin, end: temp };
-                disp.splice(i + 1, 0, new_dis);
-                break;
-              }
-            }
-          }
-        } else if (evento.frecuencia === "semanal") {
-          for (var j = 0; j < evento.reglas.length; j++) {
-            const regla = evento.reglas[j];
-            let diaIterador = regla.horaInicio;
-            let diaIteradorFin = regla.horaFin;
-            while (diaIterador < diaFin) {
-              for (var i = 0; i < disp.length; i++) {
-                let dis = disp[i];
-                if (dis.end > diaIterador) {
-                  const temp = dis.end;
-                  dis.end = diaIterador;
-                  const new_dis = { start: diaIteradorFin, end: temp };
-                  disp.splice(i + 1, 0, new_dis);
-                  break;
-                }
-              }
-              diaIterador = new Date(
-                diaIterador.getTime() + 7 * 24 * 60 * 60 * 1000
-              );
-              diaIteradorFin = new Date(
-                diaIterador.getTime() + 7 * 24 * 60 * 60 * 1000
-              );
-            }
-          }
-        } else if (evento.frecuencia === "mensual") {
-          for (var j = 0; j < evento.reglas.length; j++) {
-            const regla = evento.reglas[j];
-            let diaIterador = regla.horaInicio;
-            //console.log("diaIterador", diaIterador);
-            //console.log("diaFin", diaFin);
-            let diaIteradorFin = regla.horaFin;
-            while (diaIterador < diaFin) {
-              for (var i = 0; i < disp.length; i++) {
-                let dis = disp[i];
-                //console.log("dis.fin", dis.fin);
-                //console.log("diaIterador", diaIterador);
-                if (dis.end > diaIterador) {
-                  //console.log("entra");
-                  //console.log("diaIterador", diaIterador);
-                  //console.log("dis a modificar", dis);
-                  const temp = dis.end;
-                  dis.end = diaIterador;
-                  //console.log("antes", disp);
-                  const new_dis = { start: diaIteradorFin, end: temp };
-                  disp.splice(i + 1, 0, new_dis);
-                  //console.log("despues", disp);
-                  break;
-                }
-              }
-              diaIterador = new Date(diaIterador.getTime());
-              diaIterador.setMonth((diaIterador.getMonth() + 1) % 12);
-              //console.log(diaIterador);
-              diaIteradorFin = new Date(diaIteradorFin.getTime());
-              diaIteradorFin.setMonth((diaIteradorFin.getMonth() + 1) % 12);
-            }
-          }
+    try {
+        const usuario = await Usuario.findById(req.params.id).populate({
+            path: "eventos",
+            populate: {
+                path: "reglas",
+                options: {sort: {unidad: 1}},
+            },
+            options: {sort: {diaInicio: 1}},
+        });
+        if (!usuario) {
+            return res
+                .status(404)
+                .send({error: "No existe un usuario con el id especificado"});
         }
-      }
-      //console.log(disp);
-    });
-    const seguir = true;
-    let i = 0;
-    console.log("no entra");
+        let disp = [];
+        let past = new Date("January 1, 2021 00:00:00");
+        let future = new Date("January 1, 2022 00:00:00");
+        disp.push({start: past, end: future});
+        usuario.eventos.forEach((evento) => {
+            const diaInicio = new Date(evento.diaInicio);
+            const diaFin = new Date(evento.diaFin);
+            // NO tomar en cuenta los eventos anteriores al dia de hoy
+            if (true) {
+                // Se consideran primero los casos en los que no hay una frecuencia
+                if (evento.frecuencia === "sinRepetir") {
+                    for (var j = 0; j < evento.reglas.length; j++) {
+                        const regla = evento.reglas[j];
+                        const reglaInicio = new Date(regla.horaInicio);
+                        const reglaFin = new Date(regla.horaFin);
+                        for (var i = 0; i < disp.length; i++) {
+                            let dis = disp[i];
+                            if (dis.end > reglaInicio) {
+                                const temp = dis.end;
+                                dis.end = reglaInicio;
+                                const new_dis = {start: reglaFin, end: temp};
+                                disp.splice(i + 1, 0, new_dis);
+                                break;
+                            }
+                        }
+                    }
+                } else if (evento.frecuencia === "semanal") {
+                    for (var j = 0; j < evento.reglas.length; j++) {
+                        const regla = evento.reglas[j];
+                        let diaIterador = regla.horaInicio;
+                        let diaIteradorFin = regla.horaFin;
+                        while (diaIterador < diaFin) {
+                            for (var i = 0; i < disp.length; i++) {
+                                let dis = disp[i];
+                                if (dis.end > diaIterador) {
+                                    let end = disp[i].end
+                                    disp[i].end = diaIterador;
+                                    const new_dis = {start: diaIteradorFin, end: end};
+                                    disp.splice(i + 1, 0, new_dis);
 
-    let size = disp.length;
-    /**
-    while (i < 1) {
-      console.log("entra");
-      let dis = disp[i];
-      let d1 = dis.start;
-      let d2 = dis.end;
-      while (i < 360) {
-        //d1.getFullYear() !== d2.getFullYear() ||
-        //d1.getMonth() !== d2.getMonth() ||
-        //d1.getDate() !== d2.getDate()
-        console.log("entra2");
-        let newEnd = new Date(d1);
-        newEnd.setHours(23);
-        newEnd.setMinutes(59);
-        let newStart = new Date(d1);
-        newStart.setDate(d1.getDate() + 1);
-        //console.log("next day", newStart); // May 01 2000
-        newStart.setHours(0);
-        newStart.setMinutes(01);
-        let temp = dis.end;
-        dis.end = newEnd;
-        let newDis = {};
-        newDis = { start: newStart, end: temp };
-        console.log(newDis);
-        i = i + 1;
-        disp.splice(i + 1, 0, newDis);
-        d1 = new Date(newStart);
-        d2 = new Date(temp);
-      }
-      size = disp.length;
+                                    break;
+                                }
+                                console.log(disp[i])
+                            }
+                            diaIterador.setDate(diaIterador.getDate()+7);
+                            diaIteradorFin.setDate(diaIterador.getDate()+7);
+                        }
+                    }
+                } else if (evento.frecuencia === "mensual") {
+                    for (var j = 0; j < evento.reglas.length; j++) {
+                        const regla = evento.reglas[j];
+                        let diaIterador = regla.horaInicio;
+                        //console.log("diaIterador", diaIterador);
+                        //console.log("diaFin", diaFin);
+                        let diaIteradorFin = regla.horaFin;
+                        while (diaIterador < diaFin) {
+                            for (var i = 0; i < disp.length; i++) {
+                                let dis = disp[i];
+                                //console.log("dis.fin", dis.fin);
+                                //console.log("diaIterador", diaIterador);
+                                if (dis.end > diaIterador) {
+                                    //console.log("entra");
+                                    //console.log("diaIterador", diaIterador);
+                                    //console.log("dis a modificar", dis);
+                                    const temp = dis.end;
+                                    dis.end = diaIterador;
+                                    //console.log("antes", disp);
+                                    const new_dis = {start: diaIteradorFin, end: temp};
+                                    disp.splice(i + 1, 0, new_dis);
+                                    //console.log("despues", disp);
+                                    break;
+                                }
+                            }
+                            diaIterador = new Date(diaIterador.getTime());
+                            diaIterador.setMonth((diaIterador.getMonth() + 1) % 12);
+                            //console.log(diaIterador);
+                            diaIteradorFin = new Date(diaIteradorFin.getTime());
+                            diaIteradorFin.setMonth((diaIteradorFin.getMonth() + 1) % 12);
+                        }
+                    }
+                }
+            }
+            //console.log(disp);
+        });
+        const seguir = true;
+        let i = 0;
+
+        let size = disp.length;
+        /**while (i < size) {
+            let dis = disp[i];
+            disp.splice(i, 1);
+            let d1 = dis.start;
+            let d2 = dis.end;
+            while (
+                d1.getFullYear() !== d2.getFullYear() ||
+                d1.getMonth() !== d2.getMonth() ||
+                d1.getDay() !== d2.getDay()) {
+                let newEnd = new Date(d1);
+                newEnd.setDate(newEnd.getDate() + 1)
+                newEnd.setHours(0, 0, 0, 0);
+                newEnd.setTime(newEnd.getTime() - 1);
+                let newStart = new Date(d1);
+                newStart.setDate(newStart.getDate() + 1);
+                newStart.setHours(0, 0, 0, 0);
+                let newDis = {start: d1, end: newEnd};
+
+                disp.splice(i, 0, newDis);
+                i++;
+                d1 = new Date(newStart);
+            }
+            size = disp.length;
+        }*/
+
+
+        size = disp.length;
+        for (let i = 0; i < size; i++) {
+            Object.assign(disp[i], {id: i, title: "Disponible"});
+        }
+
+        return res.status(200).send(disp);
+    } catch (error) {
+        res.status(500).send({error: error});
     }
-
-     */
-    size = disp.length;
-    for (let i = 0; i < size; i++) {
-      Object.assign(disp[i], { id: i, title: "Disponible" });
-    }
-
-    return res.status(200).send(disp);
-  } catch (error) {
-    res.status(500).send({ error: error });
-  }
 });
+
+function setTimeCero(date) {
+    date.setHo
+}
 
 module.exports = router;
