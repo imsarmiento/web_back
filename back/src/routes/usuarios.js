@@ -283,7 +283,9 @@ router.get("/:id/disponibilidad", async (req, res) => {
             //console.log(disp);
         });
         let size = disp.length;
-
+        for(let i=0; i<size;i++){
+            Object.assign(disp[i], {id: i})
+        }
         return res.status(200).send(disp);
     } catch (error) {
         res.status(500).send({error: error});
