@@ -14,11 +14,11 @@ router.get("/:id", async (req, res) => {
     try {
         const evento = await Evento.findById(req.params.id);
         if (!evento) {
-            return res.status(404).send("No hubo coincidencia de evento");
+            return res.status(404).send({error: "No hubo coincidencia de evento"});
         }
         return res.status(200).send(evento);
     } catch (error) {
-        res.status(500).send();
+        res.status(500).send({error: error});
     }
 });
 
@@ -30,7 +30,7 @@ router.get("/", async (req, res) => {
         const eventos = await Evento.find({});
         return res.send(eventos);
     } catch (error) {
-        res.status(500).send(error);
+        res.status(500).send({error: error});
     }
 });
 
@@ -43,7 +43,7 @@ router.post("/", async (req, resp) => {
         await evento.save();
         return resp.status(201).send(evento);
     } catch (error) {
-        resp.status(400).send(error);
+        resp.status(400).send({error: error});
     }
 });
 
@@ -57,11 +57,11 @@ router.patch("/:id", async (req, res) => {
             runValidators: true,
         });
         if (!evento) {
-            return res.status(404).send("No hubo coincidencia de evento");
+            return res.status(404).send({error: "No hubo coincidencia de evento"});
         }
         return res.send(evento);
     } catch (error) {
-        return res.status(400).send(error);
+        return res.status(400).send({error: error});
     }
 });
 
@@ -72,11 +72,11 @@ router.delete("/:id", async (req, res) => {
     try {
         const evento = await Evento.findByIdAndDelete(req.params.id);
         if (!evento) {
-            return res.status(404).send("No hubo coincidencia de evento");
+            return res.status(404).send({error: "No hubo coincidencia de evento"});
         }
         res.send(evento);
     } catch (error) {
-        return res.status(500).send(error);
+        return res.status(500).send({error: error});
     }
 });
 
@@ -87,11 +87,11 @@ router.get("/:id/reglas", async (req, res) => {
     try {
         const evento = await Evento.findById(req.params.id).populate("reglas");
         if (!evento) {
-            return res.status(404).send("No hubo coincidencia de evento");
+            return res.status(404).send({error: "No hubo coincidencia de evento"});
         }
         return res.status(200).send(evento);
     } catch (error) {
-        res.status(500).send();
+        res.status(500).send({error: error});
     }
 });
 
@@ -102,12 +102,12 @@ router.patch("/:id/reglas/:idRegla", async (req, res) => {
     try {
         const evento = await Evento.findById(req.params.id);
         if (!evento) {
-            return res.status(404).send("No hubo coincidencia de evento");
+            return res.status(404).send({error: "No hubo coincidencia de evento"});
         }
         console.log(evento);
         const regla = await Regla.findById(req.params.idRegla);
         if (!regla) {
-            return res.status(404).send("No hubo coincidencia de regla");
+            return res.status(404).send({error: "No hubo coincidencia de regla"});
         }
         console.log(regla);
         evento.reglas.push(regla);
@@ -115,7 +115,7 @@ router.patch("/:id/reglas/:idRegla", async (req, res) => {
         return res.send(evento);
     } catch (error) {
         console.log(error)
-        return res.status(400).send(error);
+        return res.status(400).send({error: error});
     }
 });
 

@@ -13,11 +13,11 @@ router.get("/:id", async (req, res) => {
     try {
         const regla = await Regla.findById(req.params.id);
         if (!regla) {
-            return res.status(404).send("No hubo coincidencia de regla");
+            return res.status(404).send({error: "No hubo coincidencia de regla"});
         }
         return res.status(200).send(regla);
     } catch (error) {
-        res.status(500).send(error);
+        res.status(500).send({error: error});
     }
 });
 
@@ -28,8 +28,8 @@ router.get("/", async (req, res) => {
     try {
         const reglas = await Regla.find({});
         return res.send(reglas);
-    } catch (e) {
-        res.status(500).send();
+    } catch (error) {
+        res.status(500).send({error: error});
     }
 });
 
@@ -42,7 +42,7 @@ router.post("/", async (req, resp) => {
         await regla.save();
         return resp.status(201).send(regla);
     } catch (error) {
-        resp.status(400).send(error);
+        resp.status(400).send({error: error});
     }
 });
 
@@ -56,11 +56,11 @@ router.patch("/:id", async (req, res) => {
             runValidators: true,
         });
         if (!regla) {
-            return res.status(404).send("No hubo coincidencia de regla");
+            return res.status(404).send({error: "No hubo coincidencia de regla"});
         }
         return res.send(regla);
     } catch (error) {
-        return res.status(400).send(error);
+        return res.status(400).send({error: error});
     }
 });
 
@@ -71,11 +71,11 @@ router.delete("/:id", async (req, res) => {
     try {
         const regla = await Regla.findByIdAndDelete(req.params.id);
         if (!regla) {
-            return res.status(404).send("No hubo coincidencia de regla");
+            return res.status(404).send({error: "No hubo coincidencia de regla"});
         }
         res.send(regla);
     } catch (error) {
-        return res.status(500).send(error);
+        return res.status(500).send({error: error});
     }
 });
 
