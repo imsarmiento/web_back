@@ -231,87 +231,82 @@ router.get("/:id/disponibilidad", async (req, res) => {
                         const regla = evento.reglas[j];
                         let diaIterador = regla.horaInicio;
                         let diaIteradorFin = regla.horaFin;
+                        diaIterador.setDate(diaIterador.getDate()+regla.unidad);
+                        diaIteradorFin.setDate(diaIteradorFin.getDate()+regla.unidad);
                         while (diaIterador < diaFin) {
                             for (var i = 0; i < disp.length; i++) {
                                 let dis = disp[i];
                                 if (dis.end > diaIterador) {
-                                    let end = disp[i].end
-                                    disp[i].end = diaIterador;
-                                    const new_dis = {start: diaIteradorFin, end: end};
+                                    let end = new Date(disp[i].end);
+                                    disp[i].end = new Date(diaIterador);
+                                    const new_dis = {start: new Date(diaIteradorFin), end: end};
                                     disp.splice(i + 1, 0, new_dis);
-
                                     break;
                                 }
-                                console.log(disp[i])
+
                             }
-                            diaIterador.setDate(diaIterador.getDate()+7);
-                            diaIteradorFin.setDate(diaIterador.getDate()+7);
+                            diaIterador.setDate(diaIterador.getDate() + 7);
+                            diaIteradorFin.setDate(diaIteradorFin.getDate() + 7);
                         }
+
                     }
+
                 } else if (evento.frecuencia === "mensual") {
                     for (var j = 0; j < evento.reglas.length; j++) {
                         const regla = evento.reglas[j];
                         let diaIterador = regla.horaInicio;
-                        //console.log("diaIterador", diaIterador);
-                        //console.log("diaFin", diaFin);
                         let diaIteradorFin = regla.horaFin;
+                        diaIterador.setDate(diaIterador.getDate() + regla.unidad);
+                        diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
                         while (diaIterador < diaFin) {
                             for (var i = 0; i < disp.length; i++) {
                                 let dis = disp[i];
-                                //console.log("dis.fin", dis.fin);
-                                //console.log("diaIterador", diaIterador);
                                 if (dis.end > diaIterador) {
-                                    //console.log("entra");
-                                    //console.log("diaIterador", diaIterador);
-                                    //console.log("dis a modificar", dis);
-                                    const temp = dis.end;
-                                    dis.end = diaIterador;
-                                    //console.log("antes", disp);
-                                    const new_dis = {start: diaIteradorFin, end: temp};
+                                    let end = new Date(disp[i].end);
+                                    disp[i].end = new Date(diaIterador);
+                                    const new_dis = {start: new Date(diaIteradorFin), end: end};
                                     disp.splice(i + 1, 0, new_dis);
-                                    //console.log("despues", disp);
                                     break;
                                 }
+
                             }
-                            diaIterador = new Date(diaIterador.getTime());
-                            diaIterador.setMonth((diaIterador.getMonth() + 1) % 12);
-                            //console.log(diaIterador);
-                            diaIteradorFin = new Date(diaIteradorFin.getTime());
-                            diaIteradorFin.setMonth((diaIteradorFin.getMonth() + 1) % 12);
+                            diaIterador.setMonth(diaIterador.getMonth() + 1);
+                            diaIteradorFin.setMonth(diaIteradorFin.getMonth() + 1);
                         }
+
                     }
                 }
             }
-            //console.log(disp);
         });
-        const seguir = true;
         let i = 0;
 
         let size = disp.length;
-        /**while (i < size) {
-            let dis = disp[i];
-            disp.splice(i, 1);
-            let d1 = dis.start;
-            let d2 = dis.end;
-            while (
-                d1.getFullYear() !== d2.getFullYear() ||
-                d1.getMonth() !== d2.getMonth() ||
-                d1.getDay() !== d2.getDay()) {
-                let newEnd = new Date(d1);
-                newEnd.setDate(newEnd.getDate() + 1)
-                newEnd.setHours(0, 0, 0, 0);
-                newEnd.setTime(newEnd.getTime() - 1);
-                let newStart = new Date(d1);
-                newStart.setDate(newStart.getDate() + 1);
-                newStart.setHours(0, 0, 0, 0);
-                let newDis = {start: d1, end: newEnd};
+        while (i < size) {
+            let tempInicio = new Date(disp[i].start);
+            tempInicio.setHours(0, 0, 0, 0);
+            let tempFin = new Date(disp[i].end);
+            tempFin.setHours(0, 0, 0, 0);
+            if (tempInicio.getTime() !== tempFin.getTime()) {
+                while (tempInicio.getTime() !== tempFin.getTime()) {
+                    let newStart = new Date(disp[i].start);
+                    newStart.setHours(0, 0, 0, 0);
+                    newStart.setDate(newStart.getDate() + 1);
+                    let newEnd = new Date(newStart);
+                    newEnd.setTime(newEnd.getTime() - 2);
+                    let temp = new Date(disp[i].end);
+                    disp[i].end=new Date(newEnd);
+                    let newDis = {start: new Date(newStart), end: new Date(temp)};
+                    i++;
+                    disp.splice(i, 0, newDis);
+                    tempInicio.setDate(tempInicio.getDate()+1);
+                    console.log(disp[i].end)
+                }
 
-                disp.splice(i, 0, newDis);
+            } else {
                 i++;
-                d1 = new Date(newStart);
             }
             size = disp.length;
-        }*/
+        }
 
 
         size = disp.length;
