@@ -213,9 +213,9 @@ router.get("/:id/disponibilidad", async (req, res) => {
                         const reglaFin = new Date(regla.horaFin);
                         for (var i = 0; i < disp.length; i++) {
                             let dis = disp[i];
-                            if (dis.fin > reglaInicio) {
-                                const temp = dis.fin;
-                                dis.fin = reglaInicio;
+                            if (dis.end > reglaInicio) {
+                                const temp = dis.end;
+                                dis.end = reglaInicio;
                                 const new_dis = {start: reglaFin, end: temp};
                                 disp.splice(i + 1, 0, new_dis);
                                 break;
@@ -230,9 +230,9 @@ router.get("/:id/disponibilidad", async (req, res) => {
                         while (diaIterador < diaFin) {
                             for (var i = 0; i < disp.length; i++) {
                                 let dis = disp[i];
-                                if (dis.fin > diaIterador) {
-                                    const temp = dis.fin;
-                                    dis.fin = diaIterador;
+                                if (dis.end > diaIterador) {
+                                    const temp = dis.end;
+                                    dis.end = diaIterador;
                                     const new_dis = {start: diaIteradorFin, end: temp};
                                     disp.splice(i + 1, 0, new_dis);
                                     break;
@@ -258,12 +258,12 @@ router.get("/:id/disponibilidad", async (req, res) => {
                                 let dis = disp[i];
                                 //console.log("dis.fin", dis.fin);
                                 //console.log("diaIterador", diaIterador);
-                                if (dis.fin > diaIterador) {
+                                if (dis.end > diaIterador) {
                                     //console.log("entra");
                                     //console.log("diaIterador", diaIterador);
                                     //console.log("dis a modificar", dis);
-                                    const temp = dis.fin;
-                                    dis.fin = diaIterador;
+                                    const temp = dis.end;
+                                    dis.end = diaIterador;
                                     //console.log("antes", disp);
                                     const new_dis = {start: diaIteradorFin, end: temp};
                                     disp.splice(i + 1, 0, new_dis);
@@ -283,9 +283,7 @@ router.get("/:id/disponibilidad", async (req, res) => {
             //console.log(disp);
         });
         let size = disp.length;
-        for(let i=0; i<size;i++){
-            Object.assign(disp[i], {id: i})
-        }
+
         return res.status(200).send(disp);
     } catch (error) {
         res.status(500).send({error: error});
