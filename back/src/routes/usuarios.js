@@ -183,57 +183,40 @@ router.delete("/:id", async (req, res) => {
 });
 
 /**
- * Devuelve el la disponibilidad del usuario con el id especificado
+ * Devuelve el la disponibilidad de los usuario con el correo especificado
  */
-router.get("/:id/disponibilidad", async (req, res) => {
+router.post("/disponibilidad", async (req, res) => {
     try {
-        const usuario = await Usuario.findById(req.params.id).populate({
-            path: "eventos",
-            populate: {
-                path: "reglas",
-                options: {sort: {unidad: 1}},
-            },
-            options: {sort: {diaInicio: 1}},
-        });
-        if (!usuario) {
-            return res
-                .status(404)
-                .send({error: "No existe un usuario con el id especificado"});
-        }
         let disp = [];
-        let past = new Date("January 1, 2021 00:00:00");
-        let future = new Date("January 1, 2022 00:00:00");
+        let past = new Date(req.body.fechaInicio);
+        let future = new Date(req.body.fechaFin);
         disp.push({start: past, end: future});
-        usuario.eventos.forEach((evento) => {
-            const diaInicio = new Date(evento.diaInicio);
-            const diaFin = new Date(evento.diaFin);
-            // NO tomar en cuenta los eventos anteriores al dia de hoy
-            if (true) {
-                // Se consideran primero los casos en los que no hay una frecuencia
+        const usuarios = req.body.correos;
+        let size = usuarios.length;
+        for (let i = 0; i < size; i++) {
+            const usuario = await Usuario.findOne({correo: usuarios[i]}).populate({
+                path: "eventos",
+                populate: {
+                    path: "reglas",
+                    options: {sort: {unidad: 1}},
+                },
+                options: {sort: {diaInicio: 1}},
+            });
+            if (!usuario) {
+                return res
+                    .status(404)
+                    .send({error: "No existe un usuario con el correo "+usuarios[i]});
+            }
+            usuario.eventos.forEach((evento) => {
+                const diaFin = new Date(evento.diaFin);
                 if (evento.frecuencia === "sinRepetir") {
-                    for (var j = 0; j < evento.reglas.length; j++) {
-                        const regla = evento.reglas[j];
-                        const reglaInicio = new Date(regla.horaInicio);
-                        const reglaFin = new Date(regla.horaFin);
-                        for (var i = 0; i < disp.length; i++) {
-                            let dis = disp[i];
-                            if (dis.end > reglaInicio) {
-                                const temp = dis.end;
-                                dis.end = reglaInicio;
-                                const new_dis = {start: reglaFin, end: temp};
-                                disp.splice(i + 1, 0, new_dis);
-                                break;
-                            }
-                        }
-                    }
-                } else if (evento.frecuencia === "semanal") {
                     for (var j = 0; j < evento.reglas.length; j++) {
                         const regla = evento.reglas[j];
                         let diaIterador = regla.horaInicio;
                         let diaIteradorFin = regla.horaFin;
-                        diaIterador.setDate(diaIterador.getDate()+regla.unidad);
-                        diaIteradorFin.setDate(diaIteradorFin.getDate()+regla.unidad);
-                        while (diaIterador < diaFin) {
+                        if(diaIteradorFin>past){
+                            diaIterador.setDate(diaIterador.getDate() + regla.unidad);
+                            diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
                             for (var i = 0; i < disp.length; i++) {
                                 let dis = disp[i];
                                 if (dis.end > diaIterador) {
@@ -245,43 +228,68 @@ router.get("/:id/disponibilidad", async (req, res) => {
                                 }
 
                             }
-                            diaIterador.setDate(diaIterador.getDate() + 7);
-                            diaIteradorFin.setDate(diaIteradorFin.getDate() + 7);
                         }
 
                     }
+                } else if (evento.frecuencia === "semanal") {
+                    for (var j = 0; j < evento.reglas.length; j++) {
 
+                        const regla = evento.reglas[j];
+                        let diaIterador = regla.horaInicio;
+                        let diaIteradorFin = regla.horaFin;
+                        if (diaIteradorFin > past) {
+                            diaIterador.setDate(diaIterador.getDate() + regla.unidad);
+                            diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
+                            while (diaIterador < diaFin) {
+                                for (var i = 0; i < disp.length; i++) {
+                                    let dis = disp[i];
+                                    if (dis.end > diaIterador) {
+                                        let end = new Date(disp[i].end);
+                                        disp[i].end = new Date(diaIterador);
+                                        const new_dis = {start: new Date(diaIteradorFin), end: end};
+                                        disp.splice(i + 1, 0, new_dis);
+                                        break;
+                                    }
+                                }
+                                diaIterador.setDate(diaIterador.getDate() + 7);
+                                diaIteradorFin.setDate(diaIteradorFin.getDate() + 7);
+                            }
+                        }
+                    }
                 } else if (evento.frecuencia === "mensual") {
                     for (var j = 0; j < evento.reglas.length; j++) {
                         const regla = evento.reglas[j];
                         let diaIterador = regla.horaInicio;
                         let diaIteradorFin = regla.horaFin;
-                        diaIterador.setDate(diaIterador.getDate() + regla.unidad);
-                        diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
-                        while (diaIterador < diaFin) {
-                            for (var i = 0; i < disp.length; i++) {
-                                let dis = disp[i];
-                                if (dis.end > diaIterador) {
-                                    let end = new Date(disp[i].end);
-                                    disp[i].end = new Date(diaIterador);
-                                    const new_dis = {start: new Date(diaIteradorFin), end: end};
-                                    disp.splice(i + 1, 0, new_dis);
-                                    break;
+                        if (diaIteradorFin > past) {
+                            diaIterador.setDate(diaIterador.getDate() + regla.unidad);
+                            diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
+                            while (diaIterador < diaFin) {
+                                for (var i = 0; i < disp.length; i++) {
+                                    let dis = disp[i];
+                                    if (dis.end > diaIterador) {
+                                        let end = new Date(disp[i].end);
+                                        disp[i].end = new Date(diaIterador);
+                                        const new_dis = {start: new Date(diaIteradorFin), end: end};
+                                        disp.splice(i + 1, 0, new_dis);
+                                        break;
+                                    }
+
                                 }
-
+                                diaIterador.setMonth(diaIterador.getMonth() + 1);
+                                diaIteradorFin.setMonth(diaIteradorFin.getMonth() + 1);
                             }
-                            diaIterador.setMonth(diaIterador.getMonth() + 1);
-                            diaIteradorFin.setMonth(diaIteradorFin.getMonth() + 1);
-                        }
 
+                        }
                     }
                 }
-            }
-        });
-        let i = 0;
 
-        let size = disp.length;
+            });
+        }
+        let i = 0;
+        size = disp.length;
         while (i < size) {
+
             let tempInicio = new Date(disp[i].start);
             tempInicio.setHours(0, 0, 0, 0);
             let tempFin = new Date(disp[i].end);
@@ -292,36 +300,26 @@ router.get("/:id/disponibilidad", async (req, res) => {
                     newStart.setHours(0, 0, 0, 0);
                     newStart.setDate(newStart.getDate() + 1);
                     let newEnd = new Date(newStart);
-                    newEnd.setTime(newEnd.getTime() - 2);
+                    newEnd.setTime(newEnd.getTime() - 1);
                     let temp = new Date(disp[i].end);
-                    disp[i].end=new Date(newEnd);
+                    disp[i].end = new Date(newEnd);
                     let newDis = {start: new Date(newStart), end: new Date(temp)};
+                    Object.assign(disp[i], {id: i, title: "Disponible"});
                     i++;
                     disp.splice(i, 0, newDis);
-                    tempInicio.setDate(tempInicio.getDate()+1);
-                    console.log(disp[i].end)
+                    tempInicio.setDate(tempInicio.getDate() + 1);
                 }
-
             } else {
+                Object.assign(disp[i], {id: i, title: "Disponible"});
                 i++;
             }
             size = disp.length;
+
         }
-
-
-        size = disp.length;
-        for (let i = 0; i < size; i++) {
-            Object.assign(disp[i], {id: i, title: "Disponible"});
-        }
-
         return res.status(200).send(disp);
     } catch (error) {
         res.status(500).send({error: error});
     }
 });
-
-function setTimeCero(date) {
-    date.setHo
-}
 
 module.exports = router;

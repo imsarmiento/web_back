@@ -4,7 +4,6 @@ var Schema = mongoose.Schema;
 
 const frecuencias = [
     "sinRepetir",
-    "diaria",
     "semanal",
     "mensual",
 ]
