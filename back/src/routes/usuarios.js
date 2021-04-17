@@ -190,11 +190,15 @@ router.post("/disponibilidad", async (req, res) => {
         let disp = [];
         let past = new Date(req.body.fechaInicio);
         let future = new Date(req.body.fechaFin);
-        disp.push({start: past, end: future});
         const usuarios = req.body.correos;
         let size = usuarios.length;
-        for (let i = 0; i < size; i++) {
-            const usuario = await Usuario.findOne({correo: usuarios[i]}).populate({
+        if (size < 1) {
+            return res.status(500).send({error: "Debe ingresarse por lo menos un correo de un usuario existente"});
+        }
+        for (let k = 0; k < size; k++) {
+            disp.push([])
+            disp[k].push({start: past, end: future});
+            const usuario = await Usuario.findOne({correo: usuarios[k]}).populate({
                 path: "eventos",
                 populate: {
                     path: "reglas",
@@ -205,25 +209,26 @@ router.post("/disponibilidad", async (req, res) => {
             if (!usuario) {
                 return res
                     .status(404)
-                    .send({error: "No existe un usuario con el correo "+usuarios[i]});
+                    .send({error: "No existe un usuario con el correo " + usuarios[i]});
             }
+
             usuario.eventos.forEach((evento) => {
                 const diaFin = new Date(evento.diaFin);
                 if (evento.frecuencia === "sinRepetir") {
-                    for (var j = 0; j < evento.reglas.length; j++) {
+                    for (let j = 0; j < evento.reglas.length; j++) {
                         const regla = evento.reglas[j];
                         let diaIterador = regla.horaInicio;
                         let diaIteradorFin = regla.horaFin;
-                        if(diaIteradorFin>past){
+                        if (diaIteradorFin > past) {
                             diaIterador.setDate(diaIterador.getDate() + regla.unidad);
                             diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
-                            for (var i = 0; i < disp.length; i++) {
-                                let dis = disp[i];
-                                if (dis.end > diaIterador) {
-                                    let end = new Date(disp[i].end);
-                                    disp[i].end = new Date(diaIterador);
+                            let length = disp[k].length;
+                            for (let i = 0; i < length; i++) {
+                                if (disp[k][i].end > diaIterador) {
+                                    let end = new Date(disp[k][i].end);
+                                    disp[k][i].end = new Date(diaIterador);
                                     const new_dis = {start: new Date(diaIteradorFin), end: end};
-                                    disp.splice(i + 1, 0, new_dis);
+                                    disp[k].splice(i + 1, 0, new_dis);
                                     break;
                                 }
 
@@ -232,8 +237,7 @@ router.post("/disponibilidad", async (req, res) => {
 
                     }
                 } else if (evento.frecuencia === "semanal") {
-                    for (var j = 0; j < evento.reglas.length; j++) {
-
+                    for (let j = 0; j < evento.reglas.length; j++) {
                         const regla = evento.reglas[j];
                         let diaIterador = regla.horaInicio;
                         let diaIteradorFin = regla.horaFin;
@@ -241,13 +245,13 @@ router.post("/disponibilidad", async (req, res) => {
                             diaIterador.setDate(diaIterador.getDate() + regla.unidad);
                             diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
                             while (diaIterador < diaFin) {
-                                for (var i = 0; i < disp.length; i++) {
-                                    let dis = disp[i];
-                                    if (dis.end > diaIterador) {
-                                        let end = new Date(disp[i].end);
-                                        disp[i].end = new Date(diaIterador);
+                                let length = disp[k].length;
+                                for (let i = 0; i < length; i++) {
+                                    if (disp[k][i].end > diaIterador) {
+                                        let end = new Date(disp[k][i].end);
+                                        disp[k][i].end = new Date(diaIterador);
                                         const new_dis = {start: new Date(diaIteradorFin), end: end};
-                                        disp.splice(i + 1, 0, new_dis);
+                                        disp[k].splice(i + 1, 0, new_dis);
                                         break;
                                     }
                                 }
@@ -257,7 +261,7 @@ router.post("/disponibilidad", async (req, res) => {
                         }
                     }
                 } else if (evento.frecuencia === "mensual") {
-                    for (var j = 0; j < evento.reglas.length; j++) {
+                    for (let j = 0; j < evento.reglas.length; j++) {
                         const regla = evento.reglas[j];
                         let diaIterador = regla.horaInicio;
                         let diaIteradorFin = regla.horaFin;
@@ -265,13 +269,13 @@ router.post("/disponibilidad", async (req, res) => {
                             diaIterador.setDate(diaIterador.getDate() + regla.unidad);
                             diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
                             while (diaIterador < diaFin) {
-                                for (var i = 0; i < disp.length; i++) {
-                                    let dis = disp[i];
-                                    if (dis.end > diaIterador) {
-                                        let end = new Date(disp[i].end);
-                                        disp[i].end = new Date(diaIterador);
+                                let length = disp[k].length;
+                                for (let i = 0; i < length; i++) {
+                                    if (disp[k][i] > diaIterador) {
+                                        let end = new Date(disp[k][i]);
+                                        disp[k][i] = new Date(diaIterador);
                                         const new_dis = {start: new Date(diaIteradorFin), end: end};
-                                        disp.splice(i + 1, 0, new_dis);
+                                        disp[k].splice(i + 1, 0, new_dis);
                                         break;
                                     }
 
@@ -286,37 +290,65 @@ router.post("/disponibilidad", async (req, res) => {
 
             });
         }
-        let i = 0;
-        size = disp.length;
-        while (i < size) {
+        const final = disp[0];
 
-            let tempInicio = new Date(disp[i].start);
+        size = final.length;
+        if (disp.length > 1) {
+            let sizeI = disp.length;
+            let k = 0;
+            for (let i = 1; i < sizeI; i++) {
+                let sizeJ = disp[i].length;
+                for (let j = 0; j < sizeJ; j++) {
+                    let stop = false;
+                    while ((k < size) && (!stop)) {
+                        if (disp[i][j].start > final[k].end) {
+                            final.splice(k,1);
+                        } else {
+                            final[k].start = new Date(disp[i][j].start);
+                            if (final[k].end>disp[i][j].end) {
+                                let tempEnd = new Date(final[k].end);
+                                final[k].end=new Date(disp[i][j].end);
+                                final.splice(k+1,0, {start:new Date(final[k].end), end: tempEnd});
+
+                            }
+                            k++;
+                            stop = true;
+                        }
+                        size = final.length;
+                    }
+                }
+            }
+        }
+        let i = 0;
+        size = final.length;
+        while (i < size) {
+            let tempInicio = new Date(final[i].start);
             tempInicio.setHours(0, 0, 0, 0);
-            let tempFin = new Date(disp[i].end);
+            let tempFin = new Date(final[i].end);
             tempFin.setHours(0, 0, 0, 0);
             if (tempInicio.getTime() !== tempFin.getTime()) {
                 while (tempInicio.getTime() !== tempFin.getTime()) {
-                    let newStart = new Date(disp[i].start);
+                    let newStart = new Date(final[i].start);
                     newStart.setHours(0, 0, 0, 0);
                     newStart.setDate(newStart.getDate() + 1);
                     let newEnd = new Date(newStart);
                     newEnd.setTime(newEnd.getTime() - 1);
-                    let temp = new Date(disp[i].end);
-                    disp[i].end = new Date(newEnd);
+                    let temp = new Date(final[i].end);
+                    final[i].end = new Date(newEnd);
                     let newDis = {start: new Date(newStart), end: new Date(temp)};
-                    Object.assign(disp[i], {id: i, title: "Disponible"});
+                    Object.assign(final[i], {id: i, title: "Disponible"});
                     i++;
-                    disp.splice(i, 0, newDis);
+                    final.splice(i, 0, newDis);
                     tempInicio.setDate(tempInicio.getDate() + 1);
                 }
             } else {
-                Object.assign(disp[i], {id: i, title: "Disponible"});
+                Object.assign(final[i], {id: i, title: "Disponible"});
                 i++;
             }
-            size = disp.length;
+            size = final.length;
 
         }
-        return res.status(200).send(disp);
+        return res.status(200).send(final);
     } catch (error) {
         res.status(500).send({error: error});
     }
