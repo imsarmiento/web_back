@@ -220,8 +220,6 @@ router.post("/disponibilidad", async (req, res) => {
                         let diaIterador = regla.horaInicio;
                         let diaIteradorFin = regla.horaFin;
                         if (diaIteradorFin > past) {
-                            diaIterador.setDate(diaIterador.getDate() + regla.unidad);
-                            diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
                             let length = disp[k].length;
                             for (let i = 0; i < length; i++) {
                                 if (disp[k][i].end > diaIterador) {
@@ -244,7 +242,7 @@ router.post("/disponibilidad", async (req, res) => {
                         if (diaIteradorFin > past) {
                             diaIterador.setDate(diaIterador.getDate() + regla.unidad);
                             diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
-                            while (diaIterador < diaFin) {
+                            while (diaIterador <= diaFin) {
                                 let length = disp[k].length;
                                 for (let i = 0; i < length; i++) {
                                     if (disp[k][i].end > diaIterador) {
@@ -268,7 +266,7 @@ router.post("/disponibilidad", async (req, res) => {
                         if (diaIteradorFin > past) {
                             diaIterador.setDate(diaIterador.getDate() + regla.unidad);
                             diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
-                            while (diaIterador < diaFin) {
+                            while (diaIterador <= diaFin) {
                                 let length = disp[k].length;
                                 for (let i = 0; i < length; i++) {
                                     if (disp[k][i] > diaIterador) {
@@ -302,13 +300,13 @@ router.post("/disponibilidad", async (req, res) => {
                     let stop = false;
                     while ((k < size) && (!stop)) {
                         if (disp[i][j].start > final[k].end) {
-                            final.splice(k,1);
+                            final.splice(k, 1);
                         } else {
                             final[k].start = new Date(disp[i][j].start);
-                            if (final[k].end>disp[i][j].end) {
+                            if (final[k].end > disp[i][j].end) {
                                 let tempEnd = new Date(final[k].end);
-                                final[k].end=new Date(disp[i][j].end);
-                                final.splice(k+1,0, {start:new Date(final[k].end), end: tempEnd});
+                                final[k].end = new Date(disp[i][j].end);
+                                final.splice(k + 1, 0, {start: new Date(final[k].end), end: tempEnd});
 
                             }
                             k++;
