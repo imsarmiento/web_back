@@ -33,7 +33,7 @@ router.post("/login", async (req, res) => {
  */
 router.post("/", async (req, resp) => {
   try {
-    const usuario = await Usuario.findOne({ correo: req.body.correo });
+    let usuario = await Usuario.findOne({ correo: req.body.correo });
     if (usuario) {
       return resp
         .status(404)
