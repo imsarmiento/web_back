@@ -203,21 +203,21 @@ router.post("/crearEventoCompleto", async (req, res) => {
                         if (reglaFin <= eventos[j].end && reglaFin >= eventos[j].start) {
                             return res
                                 .status(500)
-                                .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                         } else if (reglaInicio <= eventos[j].end && reglaInicio >= eventos[j].start) {
                             return res
                                 .status(500)
-                                .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                         }
                         else if (reglaInicio <= eventos[j].start && reglaFin >= eventos[j].start) {
                             return res
                                 .status(500)
-                                .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                         }
                         else if (reglaFin <= eventos[j].end && reglaInicio >= eventos[j].end) {
                             return res
                                 .status(500)
-                                .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                         }
                     } else if (eventoParam.frecuencia === "semanal") {
                         const reglaInicio = new Date(regla.horaInicio);
@@ -228,21 +228,21 @@ router.post("/crearEventoCompleto", async (req, res) => {
                             if (reglaFin <= eventos[j].end && reglaFin >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             } else if (reglaInicio <= eventos[j].end && reglaInicio >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             else if (reglaInicio <= eventos[j].start && reglaFin >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             else if (reglaFin <= eventos[j].end && reglaInicio >= eventos[j].end) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             reglaInicio.setDate(reglaInicio.getDate() + 7);
                             reglaFin.setDate(reglaFin.getDate() + 7);
@@ -256,21 +256,21 @@ router.post("/crearEventoCompleto", async (req, res) => {
                             if (reglaFin <= eventos[j].end && reglaFin >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             } else if (reglaInicio <= eventos[j].end && reglaInicio >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             else if (reglaInicio <= eventos[j].start && reglaFin >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             else if (reglaFin <= eventos[j].end && reglaInicio >= eventos[j].end) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             reglaInicio.setMonth(reglaInicio.getMonth() + 1);
                             reglaFin.setMonth(reglaFin.getMonth() + 1);
@@ -386,21 +386,21 @@ router.post("/verificarDisponibilidad", async (req, res) => {
                         if (reglaFin <= eventos[j].end && reglaFin >= eventos[j].start) {
                             return res
                                 .status(500)
-                                .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                         } else if (reglaInicio <= eventos[j].end && reglaInicio >= eventos[j].start) {
                             return res
                                 .status(500)
-                                .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                         }
                         else if (reglaInicio <= eventos[j].start && reglaFin >= eventos[j].start) {
                             return res
                                 .status(500)
-                                .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                         }
                         else if (reglaFin <= eventos[j].end && reglaInicio >= eventos[j].end) {
                             return res
                                 .status(500)
-                                .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                         }
                     } else if (eventoParam.frecuencia === "semanal") {
                         const reglaInicio = new Date(regla.horaInicio);
@@ -411,21 +411,21 @@ router.post("/verificarDisponibilidad", async (req, res) => {
                             if (reglaFin <= eventos[j].end && reglaFin >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             } else if (reglaInicio <= eventos[j].end && reglaInicio >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             else if (reglaInicio <= eventos[j].start && reglaFin >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             else if (reglaFin <= eventos[j].end && reglaInicio >= eventos[j].end) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             reglaInicio.setDate(reglaInicio.getDate() + 7);
                             reglaFin.setDate(reglaFin.getDate() + 7);
@@ -439,21 +439,21 @@ router.post("/verificarDisponibilidad", async (req, res) => {
                             if (reglaFin <= eventos[j].end && reglaFin >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             } else if (reglaInicio <= eventos[j].end && reglaInicio >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             else if (reglaInicio <= eventos[j].start && reglaFin >= eventos[j].start) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             else if (reglaFin <= eventos[j].end && reglaInicio >= eventos[j].end) {
                                 return res
                                     .status(500)
-                                    .send({error: "Existe un conflicto de horario con el usuario " + usuarios[i].nombre + " " + usuarios[i].apellido});
+                                    .send({error: "Existe un conflicto de horario con una o mas personas para esta fecha"});
                             }
                             reglaInicio.setMonth(reglaInicio.getMonth() + 1);
                             reglaFin.setMonth(reglaFin.getMonth() + 1);
