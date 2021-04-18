@@ -237,7 +237,6 @@ router.post("/disponibilidad", async (req, res) => {
           .status(404)
           .send({ error: "No existe un usuario con el correo " + usuarios[i] });
       }
-
       usuario.eventos.forEach((evento) => {
         const diaFin = new Date(evento.diaFin);
         if (evento.frecuencia === "sinRepetir") {
@@ -385,6 +384,7 @@ router.post("/disponibilidad", async (req, res) => {
  */
 router.get("/:id/eventosFuturos", async (req, res) => {
   try {
+    const fechaActual = new Date();
     const usuario = await Usuario.findById(req.params.id).populate({
       path: "eventos",
       $match: {
@@ -407,11 +407,13 @@ router.get("/:id/eventosFuturos", async (req, res) => {
           const regla = evento.reglas[j];
           let diaIterador = new Date(regla.horaInicio);
           let diaIteradorFin = new Date(regla.horaFin);
-          eventos.push({
-            start: diaIterador,
-            end: diaIteradorFin,
-            title: evento.nombre,
-          });
+          if(fechaActual<diaIteradorFin) {
+            eventos.push({
+              start: diaIterador,
+              end: diaIteradorFin,
+              title: evento.nombre,
+            });
+          }
         }
       } else if (evento.frecuencia === "semanal") {
         let sizeEvento = evento.reglas.length;
@@ -422,11 +424,13 @@ router.get("/:id/eventosFuturos", async (req, res) => {
           diaIterador.setDate(diaIterador.getDate() + regla.unidad);
           diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
           while (evento.diaFin > diaIterador) {
-            eventos.push({
-              start: new Date(diaIterador),
-              end: new Date(diaIteradorFin),
-              title: evento.nombre,
-            });
+            if(fechaActual<diaIteradorFin) {
+              eventos.push({
+                start: new Date(diaIterador),
+                end: new Date(diaIteradorFin),
+                title: evento.nombre,
+              });
+            }
             diaIterador.setDate(diaIterador.getDate() + 7);
             diaIteradorFin.setDate(diaIteradorFin.getDate() + 7);
           }
@@ -440,11 +444,13 @@ router.get("/:id/eventosFuturos", async (req, res) => {
           diaIterador.setDate(diaIterador.getDate() + regla.unidad);
           diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
           while (evento.diaFin > diaIterador) {
-            eventos.push({
-              start: new Date(diaIterador),
-              end: new Date(diaIteradorFin),
-              title: evento.nombre,
-            });
+            if(fechaActual<diaIteradorFin) {
+              eventos.push({
+                start: new Date(diaIterador),
+                end: new Date(diaIteradorFin),
+                title: evento.nombre,
+              });
+            }
             diaIterador.setMonth(diaIterador.getMonth() + 1);
             diaIteradorFin.setMonth(diaIteradorFin.getMonth() + 1);
           }
@@ -452,7 +458,6 @@ router.get("/:id/eventosFuturos", async (req, res) => {
       }
     });
     let i = 0;
-
     let size = eventos.length;
     while (i < size) {
       let tempInicio = new Date(eventos[i].start);

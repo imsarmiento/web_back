@@ -140,7 +140,6 @@ router.post("/crearEventoCompleto", async (req, res) => {
                     populate: {
                         path: "reglas",
                     }
-
                 });
                 if (!usuario) {
                     return res
@@ -248,11 +247,8 @@ router.post("/crearEventoCompleto", async (req, res) => {
                         }
                     }
                 }
-            }
-            size = usuarios.length;
-            for (let i = 0; i < size; i++) {
                 const reglas = eventoParam.reglas;
-                eventoParam.reglas = []
+                eventoParam.reglas = [];
                 const evento = new Evento(eventoParam);
                 const response = await evento.save();
                 let sizeReglas = reglas.length;
@@ -261,12 +257,16 @@ router.post("/crearEventoCompleto", async (req, res) => {
                     response.reglas.push(await regla.save());
                     await response.save();
                 }
-                const usuario = usuarios[i];
-                usuario.eventos.push(response);
-                await usuario.save();
+                size = usuarios.length;
+                for (let i = 0; i < size; i++) {
+                    const usuario = usuarios[i];
+                    usuario.eventos.push(response);
+                    await usuario.save();
+                }
+                return res.send(usuarios);
             }
-            return res.send(usuarios);
-        } catch (error) {
+        } catch
+            (error) {
             return res.status(400).send({error: error});
         }
     }
