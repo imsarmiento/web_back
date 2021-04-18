@@ -328,26 +328,42 @@ router.post("/disponibilidad", async (req, res) => {
     size = final.length;
     if (disp.length > 1) {
       let sizeI = disp.length;
-      let k = 0;
       for (let i = 1; i < sizeI; i++) {
         let sizeJ = disp[i].length;
+        let k = 0;
         for (let j = 0; j < sizeJ; j++) {
           let stop = false;
           while (k < size && !stop) {
-            if (disp[i][j].start > final[k].end) {
+            if (disp[i][j].start >= final[k].end) {
               final.splice(k, 1);
-            } else {
-              final[k].start = new Date(disp[i][j].start);
-              if (final[k].end > disp[i][j].end) {
-                let tempEnd = new Date(final[k].end);
-                final[k].end = new Date(disp[i][j].end);
-                final.splice(k + 1, 0, {
-                  start: new Date(final[k].end),
-                  end: tempEnd,
-                });
+            }else {
+              if(disp[i][j].end >= final[k].end){
+                if(disp[i][j].start>=final[k].start){
+                  final[k].start = new Date(disp[i][j].start);
+                }
+                k++;
+                if(k<size) {
+                  disp[i][j].start = new Date(final[k].start);
+                  if (disp[i][j].end <= disp[i][j].start){
+                    stop = true;
+                  }
+                }
               }
-              k++;
-              stop = true;
+              else {
+                if(disp[i][j].start>=final[k].start){
+                  final[k].start = new Date(disp[i][j].start);
+                }
+                if (final[k].end >= disp[i][j].end) {
+                  let tempEnd = new Date(final[k].end);
+                  final[k].end = new Date(disp[i][j].end);
+                  final.splice(k + 1, 0, {
+                    start: new Date(final[k].end),
+                    end: tempEnd,
+                  });
+                }
+                k++;
+                stop = true;
+              }
             }
             size = final.length;
           }
@@ -357,7 +373,6 @@ router.post("/disponibilidad", async (req, res) => {
 
     let i = 0;
     size = final.length;
-    final.splice
     while (i < size) {
       let tempInicio = new Date(final[i].start);
       tempInicio.setHours(0, 0, 0, 0);
