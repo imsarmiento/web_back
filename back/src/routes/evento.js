@@ -120,7 +120,7 @@ router.patch("/:id/reglas/:idRegla", async (req, res) => {
 });
 
 /**
- * Devuelve el la disponibilidad de los usuario con el correo especificado
+ * Crea un evento para un grupo de usuarios con correos especificados si se logra agendar a todos
  */
 router.post("/crearEventoCompleto", async (req, res) => {
         try {
@@ -129,7 +129,6 @@ router.post("/crearEventoCompleto", async (req, res) => {
             let usuariosParam = req.body.correos;
             let eventoParam = req.body.evento;
             let size = usuariosParam.length;
-
             for (let i = 0; i < size; i++) {
                 const usuario = await Usuario.findOne({correo: usuariosParam[i]}).populate({
                     path: "eventos",
@@ -226,7 +225,6 @@ router.post("/crearEventoCompleto", async (req, res) => {
                                     .status(500)
                                     .send({error: "Existe un conflicto de horario"});
                             }
-
                             reglaInicio.setDate(reglaInicio.getDate() + 7);
                             reglaFin.setDate(reglaFin.getDate() + 7);
                         }

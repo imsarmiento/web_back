@@ -183,7 +183,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 /**
- * Devuelve el la disponibilidad de los usuario con el correo especificado
+ * Devuelve el la disponibilidad de los usuarios con correos especificados
  */
 router.post("/disponibilidad", async (req, res) => {
     try {
@@ -353,7 +353,7 @@ router.post("/disponibilidad", async (req, res) => {
 });
 
 /**
- * Devuelve el usuario con el id especificado
+ * Devuelve los eventos que siguen siendo relevantes para el usuario con el id especificado
  */
 router.get("/:id/eventosFuturos", async (req, res) => {
     try {
@@ -397,7 +397,6 @@ router.get("/:id/eventosFuturos", async (req, res) => {
                         diaIterador.setDate(diaIterador.getDate() + 7);
                         diaIteradorFin.setDate(diaIteradorFin.getDate() + 7);
                     }
-                    console.log(evento)
 
                 }
             } else if (evento.frecuencia === "mensual") {
@@ -421,7 +420,6 @@ router.get("/:id/eventosFuturos", async (req, res) => {
 
         let size = eventos.length;
         while (i < size) {
-            console.log(i)
             let tempInicio = new Date(eventos[i].start);
             tempInicio.setHours(0, 0, 0, 0);
             let tempFin = new Date(eventos[i].end);
