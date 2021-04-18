@@ -33,12 +33,18 @@ router.post("/login", async (req, res) => {
  */
 router.post("/", async (req, resp) => {
   try {
-    const usuario = new Usuario(req.body);
+    const usuario = await Usuario.findOne({ correo: req.body.correo });
+    if (usuario) {
+      return resp
+        .status(404)
+        .send({ error: "Ya existe un usuario con el correo especificado" });
+    }
+    usuario = new Usuario(req.body);
     await usuario.save();
     return resp.status(201).send(usuario);
   } catch (error) {
     console.log(error);
-    resp.status(400).send({ error: "La contraseña ingresada es incorrecta" });
+    resp.status(500).send({ error: "Hubo un error en el registro" });
   }
 });
 
