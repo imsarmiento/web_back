@@ -226,6 +226,11 @@ router.post("/disponibilidad", async (req, res) => {
       disp[k].push({ start: past, end: future });
       const usuario = await Usuario.findOne({ correo: usuarios[k] }).populate({
         path: "eventos",
+        $match: {
+          $or: [
+            {diaInicio: {$gte: past}},
+            {diaFin: {$lte: future}}]
+        },
         populate: {
           path: "reglas",
           options: { sort: { unidad: 1 } },
@@ -241,19 +246,18 @@ router.post("/disponibilidad", async (req, res) => {
         const diaFin = new Date(evento.diaFin);
         if (evento.frecuencia === "sinRepetir") {
           for (let j = 0; j < evento.reglas.length; j++) {
+
             const regla = evento.reglas[j];
             let diaIterador = regla.horaInicio;
             let diaIteradorFin = regla.horaFin;
-            if (diaIteradorFin > past) {
-              let length = disp[k].length;
-              for (let i = 0; i < length; i++) {
-                if (disp[k][i].end > diaIterador) {
-                  let end = new Date(disp[k][i].end);
-                  disp[k][i].end = new Date(diaIterador);
-                  const new_dis = { start: new Date(diaIteradorFin), end: end };
-                  disp[k].splice(i + 1, 0, new_dis);
-                  break;
-                }
+            let length = disp[k].length;
+            for (let i = 0; i < length; i++) {
+              if (disp[k][i].end > diaIterador) {
+                let end = new Date(disp[k][i].end);
+                disp[k][i].end = new Date(diaIterador);
+                const new_dis = {start: new Date(diaIteradorFin), end: end};
+                disp[k].splice(i + 1, 0, new_dis);
+                break;
               }
             }
           }
@@ -262,26 +266,28 @@ router.post("/disponibilidad", async (req, res) => {
             const regla = evento.reglas[j];
             let diaIterador = regla.horaInicio;
             let diaIteradorFin = regla.horaFin;
-            if (diaIteradorFin > past) {
-              diaIterador.setDate(diaIterador.getDate() + regla.unidad);
-              diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
-              while (diaIterador <= diaFin) {
-                let length = disp[k].length;
-                for (let i = 0; i < length; i++) {
-                  if (disp[k][i].end > diaIterador) {
-                    let end = new Date(disp[k][i].end);
-                    disp[k][i].end = new Date(diaIterador);
-                    const new_dis = {
-                      start: new Date(diaIteradorFin),
-                      end: end,
-                    };
-                    disp[k].splice(i + 1, 0, new_dis);
-                    break;
-                  }
+            diaIterador.setDate(diaIterador.getDate() + regla.unidad);
+            diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
+            while (diaIterador <= diaFin) {
+              let length = disp[k].length;
+              for (let i = 0; i < length; i++) {
+                if (disp[k][i].end > diaIterador) {
+                  let end = new Date(disp[k][i].end);
+                  disp[k][i].end = new Date(diaIterador);
+                  const new_dis = {
+                    start: new Date(diaIteradorFin),
+                    end: end,
+                  };
+                  disp[k].splice(i + 1, 0, new_dis);
+                  break;
                 }
-                diaIterador.setDate(diaIterador.getDate() + 7);
-                diaIteradorFin.setDate(diaIteradorFin.getDate() + 7);
+                if(disp[k][i].end<past){
+                  disp[k].splice(i, 1);
+                }
+                length = disp[k].length;
               }
+              diaIterador.setDate(diaIterador.getDate() + 7);
+              diaIteradorFin.setDate(diaIteradorFin.getDate() + 7);
             }
           }
         } else if (evento.frecuencia === "mensual") {
@@ -289,33 +295,34 @@ router.post("/disponibilidad", async (req, res) => {
             const regla = evento.reglas[j];
             let diaIterador = regla.horaInicio;
             let diaIteradorFin = regla.horaFin;
-            if (diaIteradorFin > past) {
-              diaIterador.setDate(diaIterador.getDate() + regla.unidad);
-              diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
-              while (diaIterador <= diaFin) {
-                let length = disp[k].length;
-                for (let i = 0; i < length; i++) {
-                  if (disp[k][i] > diaIterador) {
-                    let end = new Date(disp[k][i]);
-                    disp[k][i] = new Date(diaIterador);
-                    const new_dis = {
-                      start: new Date(diaIteradorFin),
-                      end: end,
-                    };
-                    disp[k].splice(i + 1, 0, new_dis);
-                    break;
-                  }
+            diaIterador.setDate(diaIterador.getDate() + regla.unidad);
+            diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
+            while (diaIterador <= diaFin) {
+              let length = disp[k].length;
+              for (let i = 0; i < length; i++) {
+                if (disp[k][i].end > diaIterador) {
+                  let end = new Date(disp[k][i].end);
+                  disp[k][i].end = new Date(diaIterador);
+                  const new_dis = {
+                    start: new Date(diaIteradorFin),
+                    end: end,
+                  };
+                  disp[k].splice(i + 1, 0, new_dis);
+                  break;
                 }
-                diaIterador.setMonth(diaIterador.getMonth() + 1);
-                diaIteradorFin.setMonth(diaIteradorFin.getMonth() + 1);
+                if(disp[k][i].end<past){
+                  disp[k].splice(i, 1);
+                }
+                length = disp[k].length;
               }
+              diaIterador.setMonth(diaIterador.getMonth() + 1);
+              diaIteradorFin.setMonth(diaIteradorFin.getMonth() + 1);
             }
           }
         }
       });
     }
     const final = disp[0];
-
     size = final.length;
     if (disp.length > 1) {
       let sizeI = disp.length;
@@ -345,13 +352,17 @@ router.post("/disponibilidad", async (req, res) => {
         }
       }
     }
+
     let i = 0;
     size = final.length;
+    final.splice
     while (i < size) {
+
       let tempInicio = new Date(final[i].start);
       tempInicio.setHours(0, 0, 0, 0);
       let tempFin = new Date(final[i].end);
       tempFin.setHours(0, 0, 0, 0);
+      console.log(tempInicio.getTime() !== tempFin.getTime())
       if (tempInicio.getTime() !== tempFin.getTime()) {
         while (tempInicio.getTime() !== tempFin.getTime()) {
           let newStart = new Date(final[i].start);
@@ -368,8 +379,12 @@ router.post("/disponibilidad", async (req, res) => {
           tempInicio.setDate(tempInicio.getDate() + 1);
         }
       } else {
-        Object.assign(final[i], { id: i, title: "Disponible" });
-        i++;
+        if(final[i].start.getTime()===final[i].end.getTime()){
+          final.splice(i,1);
+        }else {
+          Object.assign(final[i], {id: i, title: "Disponible"});
+          i++;
+        }
       }
       size = final.length;
     }
@@ -423,7 +438,7 @@ router.get("/:id/eventosFuturos", async (req, res) => {
           let diaIteradorFin = new Date(regla.horaFin);
           diaIterador.setDate(diaIterador.getDate() + regla.unidad);
           diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
-          while (evento.diaFin > diaIterador) {
+          while (evento.diaFin >= diaIterador) {
             if(fechaActual<diaIteradorFin) {
               eventos.push({
                 start: new Date(diaIterador),
@@ -443,7 +458,7 @@ router.get("/:id/eventosFuturos", async (req, res) => {
           let diaIteradorFin = new Date(regla.horaFin);
           diaIterador.setDate(diaIterador.getDate() + regla.unidad);
           diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
-          while (evento.diaFin > diaIterador) {
+          while (evento.diaFin >= diaIterador) {
             if(fechaActual<diaIteradorFin) {
               eventos.push({
                 start: new Date(diaIterador),
