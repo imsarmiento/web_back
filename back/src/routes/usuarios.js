@@ -270,7 +270,11 @@ router.post("/disponibilidad", async (req, res) => {
             while (diaIterador <= diaFin) {
               let length = disp[k].length;
               for (let i = 0; i < length; i++) {
-                if (disp[k][i].end > diaIterador) {
+                if(disp[k][i].end<past){
+                  disp[k].splice(i, 1);
+                  i--;
+                }
+                else if (disp[k][i].end > diaIterador) {
                   let end = new Date(disp[k][i].end);
                   disp[k][i].end = new Date(diaIterador);
                   const new_dis = {
@@ -280,9 +284,7 @@ router.post("/disponibilidad", async (req, res) => {
                   disp[k].splice(i + 1, 0, new_dis);
                   break;
                 }
-                if(disp[k][i].end<past){
-                  disp[k].splice(i, 1);
-                }
+
                 length = disp[k].length;
               }
               diaIterador.setDate(diaIterador.getDate() + 7);
@@ -299,7 +301,11 @@ router.post("/disponibilidad", async (req, res) => {
             while (diaIterador <= diaFin) {
               let length = disp[k].length;
               for (let i = 0; i < length; i++) {
-                if (disp[k][i].end > diaIterador) {
+                if(disp[k][i].end<past){
+                  disp[k].splice(i, 1);
+                  i--;
+                }
+                else if (disp[k][i].end > diaIterador) {
                   let end = new Date(disp[k][i].end);
                   disp[k][i].end = new Date(diaIterador);
                   const new_dis = {
@@ -308,9 +314,6 @@ router.post("/disponibilidad", async (req, res) => {
                   };
                   disp[k].splice(i + 1, 0, new_dis);
                   break;
-                }
-                if(disp[k][i].end<past){
-                  disp[k].splice(i, 1);
                 }
                 length = disp[k].length;
               }
