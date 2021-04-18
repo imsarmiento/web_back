@@ -352,4 +352,105 @@ router.post("/disponibilidad", async (req, res) => {
     }
 });
 
+/**
+ * Devuelve el usuario con el id especificado
+ */
+router.get("/:id/eventosFuturos", async (req, res) => {
+    try {
+        const usuario = await Usuario.findById(req.params.id).populate({
+            path: "eventos",
+            $match: {
+                $or: [
+                    {diaFin: {$gte: new Date()}}]
+            },
+            populate: {
+                path: "reglas",
+            }
+
+        });
+        if (!usuario) {
+            return res
+                .status(404)
+                .send({error: "No existe un usuario con el id especificado"});
+        }
+        const eventos = [];
+        usuario.eventos.forEach((evento) => {
+
+            if (evento.frecuencia === "sinRepetir") {
+                let sizeEvento = evento.reglas.length;
+                for (let j = 0; j < sizeEvento; j++) {
+                    const regla = evento.reglas[j];
+                    let diaIterador = new Date(regla.horaInicio);
+                    let diaIteradorFin = new Date(regla.horaFin);
+                    eventos.push({start: diaIterador, end: diaIteradorFin, title: evento.nombre});
+                }
+            } else if (evento.frecuencia === "semanal") {
+                let sizeEvento = evento.reglas.length;
+                for (let j = 0; j < sizeEvento; j++) {
+                    const regla = evento.reglas[j];
+                    let diaIterador = new Date(regla.horaInicio);
+                    let diaIteradorFin = new Date(regla.horaFin);
+                    diaIterador.setDate(diaIterador.getDate() + regla.unidad);
+                    diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
+                    while (evento.diaFin > diaIterador) {
+                        eventos.push({start: new Date(diaIterador), end: new Date(diaIteradorFin), title: evento.nombre});
+                        diaIterador.setDate(diaIterador.getDate() + 7);
+                        diaIteradorFin.setDate(diaIteradorFin.getDate() + 7);
+                    }
+                    console.log(evento)
+
+                }
+            } else if (evento.frecuencia === "mensual") {
+                let sizeEvento = evento.reglas.length;
+                for (let j = 0; j < sizeEvento; j++) {
+                    const regla = evento.reglas[j];
+                    let diaIterador = new Date(regla.horaInicio);
+                    let diaIteradorFin = new Date(regla.horaFin);
+                    diaIterador.setDate(diaIterador.getDate() + regla.unidad);
+                    diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
+                    while (evento.diaFin > diaIterador) {
+                        eventos.push({start: new Date(diaIterador), end: new Date(diaIteradorFin), title: evento.nombre});
+                        diaIterador.setMonth(diaIterador.getMonth() + 1);
+                        diaIteradorFin.setMonth(diaIteradorFin.getMonth() + 1);
+                    }
+                }
+            }
+
+        });
+        let i = 0;
+
+        let size = eventos.length;
+        while (i < size) {
+            console.log(i)
+            let tempInicio = new Date(eventos[i].start);
+            tempInicio.setHours(0, 0, 0, 0);
+            let tempFin = new Date(eventos[i].end);
+            tempFin.setHours(0, 0, 0, 0);
+            if (tempInicio.getTime() !== tempFin.getTime()) {
+                while (tempInicio.getTime() !== tempFin.getTime()) {
+                    let newStart = new Date(eventos[i].start);
+                    newStart.setHours(0, 0, 0, 0);
+                    newStart.setDate(newStart.getDate() + 1);
+                    let newEnd = new Date(newStart);
+                    newEnd.setTime(newEnd.getTime() - 1);
+                    let temp = new Date(eventos[i].end);
+                    eventos[i].end = new Date(newEnd);
+                    let newDis = {start: new Date(newStart), end: new Date(temp)};
+                    Object.assign(eventos[i], {id: i, title: "Disponible"});
+                    i++;
+                    eventos.splice(i, 0, newDis);
+                    tempInicio.setDate(tempInicio.getDate() + 1);
+                }
+            } else {
+                Object.assign(eventos[i], {id: i});
+                i++;
+            }
+            size = eventos.length;
+        }
+        return res.send(eventos)
+    } catch (error) {
+        res.status(500).send({error: error});
+    }
+});
+
 module.exports = router;
