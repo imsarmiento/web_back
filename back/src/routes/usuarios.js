@@ -246,7 +246,6 @@ router.post("/disponibilidad", async (req, res) => {
         const diaFin = new Date(evento.diaFin);
         if (evento.frecuencia === "sinRepetir") {
           for (let j = 0; j < evento.reglas.length; j++) {
-
             const regla = evento.reglas[j];
             let diaIterador = regla.horaInicio;
             let diaIteradorFin = regla.horaFin;
@@ -357,12 +356,10 @@ router.post("/disponibilidad", async (req, res) => {
     size = final.length;
     final.splice
     while (i < size) {
-
       let tempInicio = new Date(final[i].start);
       tempInicio.setHours(0, 0, 0, 0);
       let tempFin = new Date(final[i].end);
       tempFin.setHours(0, 0, 0, 0);
-      console.log(tempInicio.getTime() !== tempFin.getTime())
       if (tempInicio.getTime() !== tempFin.getTime()) {
         while (tempInicio.getTime() !== tempFin.getTime()) {
           let newStart = new Date(final[i].start);
