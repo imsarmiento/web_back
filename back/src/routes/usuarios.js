@@ -8,6 +8,9 @@ const router = new express.Router();
  */
 
 /**
+ * LOGIN
+ */
+/**
  * Retorna los datos del usuario si sus credenciales son correctos
  */
 router.post("/login", async (req, res) => {
@@ -17,7 +20,7 @@ router.post("/login", async (req, res) => {
     if (!usuario) {
       return res.status(401).send({ error: "El usuario no esta registrado" });
     }
-    if (!(usuario.contrasena === req.body.contrasena)) {
+    if (usuario.contrasena !== req.body.contrasena) {
       return res
         .status(401)
         .send({ error: "La contraseña ingresada es incorrecta" });
@@ -29,6 +32,10 @@ router.post("/login", async (req, res) => {
 });
 
 /**
+ * CRUD
+ */
+
+/**
  * Crea un usuario
  */
 router.post("/", async (req, resp) => {
@@ -36,7 +43,7 @@ router.post("/", async (req, resp) => {
     let usuario = await Usuario.findOne({ correo: req.body.correo });
     if (usuario) {
       return resp
-        .status(404)
+        .status(409)
         .send({ error: "Ya existe un usuario con el correo especificado" });
     }
     usuario = new Usuario(req.body);
@@ -80,6 +87,51 @@ router.get("/:id", async (req, res) => {
 });
 
 /**
+ *  Modifica un usuario con el id especificado
+ */
+ router.patch("/:id", async (req, res) => {
+  // Se pueden pasar por parametro los campos no modificables
+  try {
+    if (!Usuario.fieldsNotAllowedUpdates(req.body)) {
+      return res.status(400).send({ error: "Invalid updates" });
+    }
+    const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!usuario) {
+      return res
+        .status(404)
+        .send({ error: "No existe un usuario con el id especificado" });
+    }
+    return res.status(201).send(usuario);
+  } catch (error) {
+    return res.status(400).send({ error: error });
+  }
+});
+
+/**
+ * Elimina un usuario con el id especificado
+ */
+ router.delete("/:id", async (req, res) => {
+  try {
+    const usuario = await Usuario.findByIdAndDelete(req.params.id);
+    if (!usuario) {
+      return res
+        .status(404)
+        .send({ error: "No existe un usuario con el id especificado" });
+    }
+    res.status(204).send();
+  } catch (error) {
+    return res.status(500).send({ error: error });
+  }
+});
+
+/**
+ * Obtener disponibilidad
+ */
+
+/**
  * Devuelve el usuario con el correo especificado
  */
 router.get("/correo/:correo", async (req, res) => {
@@ -98,115 +150,6 @@ router.get("/correo/:correo", async (req, res) => {
 });
 
 /**
- * Devuelve el usuario con el id especificado y sus eventos poblados
- */
-router.get("/:id/eventos", async (req, res) => {
-  try {
-    const usuario = await Usuario.findById(req.params.id).populate("eventos");
-    if (!usuario) {
-      return res
-        .status(404)
-        .send("No existe un usuario con el id especificado");
-    }
-    return res.status(200).send(usuario);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: error });
-  }
-});
-
-/**
- * Devuelve el usuario con el id especificado y sus eventos poblados con sus reglas pobladas
- */
-router.get("/:id/eventos_reglas", async (req, res) => {
-  try {
-    const usuario = await Usuario.findById(req.params.id).populate({
-      path: "eventos",
-      populate: {
-        path: "reglas",
-        options: { sort: { unidad: 1 } },
-      },
-      options: { sort: { diaInicio: 1 } },
-    });
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
-    }
-    return res.status(200).send(usuario);
-  } catch (error) {
-    res.status(500).send({ error: error });
-  }
-});
-
-/**
- *  Modifica un usuario con el id especificado
- */
-router.patch("/:id", async (req, res) => {
-  // Se pueden pasar por parametro los campos no modificables
-  try {
-    if (!Usuario.fieldsNotAllowedUpdates(req.body)) {
-      return res.status(400).send({ error: "Invalid updates" });
-    }
-    const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
-    }
-    return res.send(usuario);
-  } catch (error) {
-    return res.status(400).send({ error: error });
-  }
-});
-
-/**
- *  Modifica un usuario con el id especificado, agregandole un evento existente
- */
-router.patch("/:idU/eventos/:idE", async (req, res) => {
-  // Se pueden pasar por parametro los campos no modificables
-  try {
-    const usuario = await Usuario.findById(req.params.idU);
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
-    }
-    const evento = await Evento.findById(req.params.idE);
-    if (!evento) {
-      return res
-        .status(404)
-        .send({ error: "No existe un evento con el id especificado" });
-    }
-    usuario.eventos.push(evento.id);
-    usuario.save();
-    return res.send(usuario);
-  } catch (error) {
-    return res.status(400).send({ error: error });
-  }
-});
-
-/**
- * Elimina un usuario con el id especificado
- */
-router.delete("/:id", async (req, res) => {
-  try {
-    const usuario = await Usuario.findByIdAndDelete(req.params.id);
-    if (!usuario) {
-      return res
-        .status(404)
-        .send({ error: "No existe un usuario con el id especificado" });
-    }
-    res.send(usuario);
-  } catch (error) {
-    return res.status(500).send({ error: error });
-  }
-});
-
-/**
  * Devuelve el la disponibilidad de los usuarios con correos especificados
  */
 router.post("/disponibilidad", async (req, res) => {
@@ -215,9 +158,10 @@ router.post("/disponibilidad", async (req, res) => {
     let past = new Date(req.body.fechaInicio);
     let future = new Date(req.body.fechaFin);
     const usuarios = req.body.correos;
+    console.log(usuarios)
     let size = usuarios.length;
     if (size < 1) {
-      return res.status(500).send({
+      return res.status(400).send({
         error: "Debe ingresarse por lo menos un correo de un usuario existente",
       });
     }
@@ -237,10 +181,10 @@ router.post("/disponibilidad", async (req, res) => {
         },
         options: { sort: { diaInicio: 1 } },
       });
-      if (!usuario) {
+      if (usuario === null) {
         return res
           .status(404)
-          .send({ error: "No existe un usuario con el correo " + usuarios[i] });
+          .send({ error: `Existe un correo que no está registrado` });
       }
       usuario.eventos.forEach((evento) => {
         const diaFin = new Date(evento.diaFin);
@@ -408,6 +352,55 @@ router.post("/disponibilidad", async (req, res) => {
     res.status(500).send({ error: error });
   }
 });
+
+/**
+ * Devuelve el usuario con el id especificado y sus eventos poblados
+ */
+ router.get("/:id/eventos", async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.params.id).populate("eventos");
+    if (!usuario) {
+      return res
+        .status(404)
+        .send("No existe un usuario con el id especificado");
+    }
+    return res.status(200).send(usuario.eventos);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error: error });
+  }
+});
+
+
+/**
+ *  Modifica un usuario con el id especificado, agregandole un evento existente
+ */
+router.patch("/:idU/eventos/:idE", async (req, res) => {
+  // Se pueden pasar por parametro los campos no modificables
+  try {
+    const usuario = await Usuario.findById(req.params.idU);
+    if (!usuario) {
+      return res
+        .status(404)
+        .send({ error: "No existe un usuario con el id especificado" });
+    }
+    const evento = await Evento.findById(req.params.idE);
+    if (!evento) {
+      return res
+        .status(404)
+        .send({ error: "No existe un evento con el id especificado" });
+    }
+    usuario.eventos.push(evento.id);
+    usuario.save();
+    return res.send(usuario);
+  } catch (error) {
+    return res.status(400).send({ error: error });
+  }
+});
+
+/**
+ * Ver eventos del usuario
+ */
 
 /**
  * Devuelve los eventos que siguen siendo relevantes para el usuario con el id especificado
