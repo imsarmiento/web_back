@@ -60,7 +60,7 @@ router.patch("/:id", async (req, res) => {
         if (!evento) {
             return res.status(404).send({error: "No hubo coincidencia de evento"});
         }
-        return res.send(evento);
+        return res.status(201).send(evento);
     } catch (error) {
         return res.status(400).send({error: error});
     }
@@ -75,7 +75,7 @@ router.delete("/:id", async (req, res) => {
         if (!evento) {
             return res.status(404).send({error: "No hubo coincidencia de evento"});
         }
-        res.send(evento);
+        res.status(204).send();
     } catch (error) {
         return res.status(500).send({error: error});
     }
