@@ -21,7 +21,7 @@ const notifyChanges = (callback) => {
       .on("change", (change) => {
         console.log("Collection changing");
         getEventos((data) => {
-          console.log(data);
+          //console.log(data);
           callback(JSON.stringify(data));
         });
       });
