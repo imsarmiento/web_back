@@ -81,6 +81,21 @@ router.patch("/:id/aceptarEvento", async (req, res) => {
     }
 });
 
+router.patch("/:id/rechazarEvento", async (req, res) => {
+    try {
+        const evento = await Evento.findByIdAndUpdate(req.params.id, {estado: "rechazado"}, {
+            new: true,
+            runValidators: true,
+        });
+        if (!evento) {
+            return res.status(404).send({error: "No hubo coincidencia de evento"});
+        }
+        return res.status(201).send(evento);
+    } catch (error) {
+        return res.status(400).send({error: error});
+    }
+});
+
 /**
  * Elimina un evento con el id especificado
  */

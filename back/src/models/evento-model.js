@@ -11,6 +11,7 @@ const frecuencias = [
 const estados = [
     "aceptado",
     "pendiente",
+    "rechazado",
 ]
 
 const eventoSchema = new Schema({
