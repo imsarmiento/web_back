@@ -74,7 +74,7 @@ router.get("/", async (req, res) => {
  */
 router.get("/:id", async (req, res) => {
   try {
-    const usuario = await Usuario.findById(req.params.id);
+    const usuario = await Usuario.findById(req.params.id).populate("eventos");
     if (!usuario) {
       return res
         .status(404)
@@ -89,7 +89,7 @@ router.get("/:id", async (req, res) => {
 /**
  *  Modifica un usuario con el id especificado
  */
- router.patch("/:id", async (req, res) => {
+router.patch("/:id", async (req, res) => {
   // Se pueden pasar por parametro los campos no modificables
   try {
     if (!Usuario.fieldsNotAllowedUpdates(req.body)) {
@@ -113,7 +113,7 @@ router.get("/:id", async (req, res) => {
 /**
  * Elimina un usuario con el id especificado
  */
- router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const usuario = await Usuario.findByIdAndDelete(req.params.id);
     if (!usuario) {
@@ -158,7 +158,7 @@ router.post("/disponibilidad", async (req, res) => {
     let past = new Date(req.body.fechaInicio);
     let future = new Date(req.body.fechaFin);
     const usuarios = req.body.correos;
-    console.log(usuarios)
+    console.log(usuarios);
     let size = usuarios.length;
     if (size < 1) {
       return res.status(400).send({
@@ -171,9 +171,7 @@ router.post("/disponibilidad", async (req, res) => {
       const usuario = await Usuario.findOne({ correo: usuarios[k] }).populate({
         path: "eventos",
         $match: {
-          $or: [
-            {diaInicio: {$gte: past}},
-            {diaFin: {$lte: future}}]
+          $or: [{ diaInicio: { $gte: past } }, { diaFin: { $lte: future } }],
         },
         populate: {
           path: "reglas",
@@ -198,7 +196,7 @@ router.post("/disponibilidad", async (req, res) => {
               if (disp[k][i].end > diaIterador) {
                 let end = new Date(disp[k][i].end);
                 disp[k][i].end = new Date(diaIterador);
-                const new_dis = {start: new Date(diaIteradorFin), end: end};
+                const new_dis = { start: new Date(diaIteradorFin), end: end };
                 disp[k].splice(i + 1, 0, new_dis);
                 break;
               }
@@ -214,11 +212,10 @@ router.post("/disponibilidad", async (req, res) => {
             while (diaIterador <= diaFin) {
               let length = disp[k].length;
               for (let i = 0; i < length; i++) {
-                if(disp[k][i].end<past){
+                if (disp[k][i].end < past) {
                   disp[k].splice(i, 1);
                   i--;
-                }
-                else if (disp[k][i].end > diaIterador) {
+                } else if (disp[k][i].end > diaIterador) {
                   let end = new Date(disp[k][i].end);
                   disp[k][i].end = new Date(diaIterador);
                   const new_dis = {
@@ -245,11 +242,10 @@ router.post("/disponibilidad", async (req, res) => {
             while (diaIterador <= diaFin) {
               let length = disp[k].length;
               for (let i = 0; i < length; i++) {
-                if(disp[k][i].end<past){
+                if (disp[k][i].end < past) {
                   disp[k].splice(i, 1);
                   i--;
-                }
-                else if (disp[k][i].end > diaIterador) {
+                } else if (disp[k][i].end > diaIterador) {
                   let end = new Date(disp[k][i].end);
                   disp[k][i].end = new Date(diaIterador);
                   const new_dis = {
@@ -280,21 +276,20 @@ router.post("/disponibilidad", async (req, res) => {
           while (k < size && !stop) {
             if (disp[i][j].start >= final[k].end) {
               final.splice(k, 1);
-            }else {
-              if(disp[i][j].end >= final[k].end){
-                if(disp[i][j].start>=final[k].start){
+            } else {
+              if (disp[i][j].end >= final[k].end) {
+                if (disp[i][j].start >= final[k].start) {
                   final[k].start = new Date(disp[i][j].start);
                 }
                 k++;
-                if(k<size) {
+                if (k < size) {
                   disp[i][j].start = new Date(final[k].start);
-                  if (disp[i][j].end <= disp[i][j].start){
+                  if (disp[i][j].end <= disp[i][j].start) {
                     stop = true;
                   }
                 }
-              }
-              else {
-                if(disp[i][j].start>=final[k].start){
+              } else {
+                if (disp[i][j].start >= final[k].start) {
                   final[k].start = new Date(disp[i][j].start);
                 }
                 if (final[k].end >= disp[i][j].end) {
@@ -338,10 +333,10 @@ router.post("/disponibilidad", async (req, res) => {
           tempInicio.setDate(tempInicio.getDate() + 1);
         }
       } else {
-        if(final[i].start.getTime()===final[i].end.getTime()){
-          final.splice(i,1);
-        }else {
-          Object.assign(final[i], {id: i, title: "Disponible"});
+        if (final[i].start.getTime() === final[i].end.getTime()) {
+          final.splice(i, 1);
+        } else {
+          Object.assign(final[i], { id: i, title: "Disponible" });
           i++;
         }
       }
@@ -356,7 +351,7 @@ router.post("/disponibilidad", async (req, res) => {
 /**
  * Devuelve el usuario con el id especificado y sus eventos poblados
  */
- router.get("/:id/eventos", async (req, res) => {
+router.get("/:id/eventos", async (req, res) => {
   try {
     const usuario = await Usuario.findById(req.params.id).populate("eventos");
     if (!usuario) {
@@ -370,7 +365,6 @@ router.post("/disponibilidad", async (req, res) => {
     res.status(500).send({ error: error });
   }
 });
-
 
 /**
  *  Modifica un usuario con el id especificado, agregandole un evento existente
@@ -430,7 +424,7 @@ router.get("/:id/eventosFuturos", async (req, res) => {
           const regla = evento.reglas[j];
           let diaIterador = new Date(regla.horaInicio);
           let diaIteradorFin = new Date(regla.horaFin);
-          if(fechaActual<diaIteradorFin) {
+          if (fechaActual < diaIteradorFin) {
             eventos.push({
               start: diaIterador,
               end: diaIteradorFin,
@@ -447,7 +441,7 @@ router.get("/:id/eventosFuturos", async (req, res) => {
           diaIterador.setDate(diaIterador.getDate() + regla.unidad);
           diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
           while (evento.diaFin >= diaIterador) {
-            if(fechaActual<diaIteradorFin) {
+            if (fechaActual < diaIteradorFin) {
               eventos.push({
                 start: new Date(diaIterador),
                 end: new Date(diaIteradorFin),
@@ -467,7 +461,7 @@ router.get("/:id/eventosFuturos", async (req, res) => {
           diaIterador.setDate(diaIterador.getDate() + regla.unidad);
           diaIteradorFin.setDate(diaIteradorFin.getDate() + regla.unidad);
           while (evento.diaFin >= diaIterador) {
-            if(fechaActual<diaIteradorFin) {
+            if (fechaActual < diaIteradorFin) {
               eventos.push({
                 start: new Date(diaIterador),
                 end: new Date(diaIteradorFin),
