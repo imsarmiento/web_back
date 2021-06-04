@@ -1,6 +1,6 @@
 const mu = require("../lib/mongoUtils");
 
-const getMovies = (callback) => {
+const getEventos = (callback) => {
   mu.then((client) => {
     client
       .db("meetSpot")
@@ -20,7 +20,7 @@ const notifyChanges = (callback) => {
       .watch()
       .on("change", (change) => {
         console.log("Collection changing");
-        getMovies((data) => {
+        getEventos((data) => {
           console.log(data);
           callback(JSON.stringify(data));
         });
@@ -28,6 +28,6 @@ const notifyChanges = (callback) => {
   });
 };
 
-const movie = { getMovies, notifyChanges };
+const evento = { getEventos, notifyChanges };
 
-module.exports = movie;
+module.exports = evento;

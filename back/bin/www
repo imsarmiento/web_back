@@ -9,7 +9,7 @@ var debug = require("debug")("back:server");
 var http = require("http");
 
 const wsUtils = require("../src/lib/wsUtils");
-const movie = require("../src/controller/movies");
+const envento1 = require("../src/controller/eventos");
 
 /**
  * Get port from environment and store in Express.
@@ -24,7 +24,7 @@ app.set("port", port);
 
 var server = http.createServer(app);
 wsUtils.setupWS(server);
-movie.notifyChanges(wsUtils.notifyAll);
+envento1.notifyChanges(wsUtils.notifyAll);
 
 /**
  * Listen on provided port, on all network interfaces.

@@ -4,10 +4,10 @@ const Usuario = require("../models/usuario-model");
 const Regla = require("../models/regla-model");
 const router = new express.Router();
 
-const movie = require("../controller/movies");
+const evento = require("../controller/eventos");
 
 router.get("/eventosLive", function (req, res, next) {
-  movie.getMovies((data) => {
+  evento.getEventos((data) => {
     res.send(data);
   });
 });
