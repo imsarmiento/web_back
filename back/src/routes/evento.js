@@ -66,6 +66,21 @@ router.patch("/:id", async (req, res) => {
     }
 });
 
+router.patch("/:id/aceptarEvento", async (req, res) => {
+    try {
+        const evento = await Evento.findByIdAndUpdate(req.params.id, {estado: "aceptado"}, {
+            new: true,
+            runValidators: true,
+        });
+        if (!evento) {
+            return res.status(404).send({error: "No hubo coincidencia de evento"});
+        }
+        return res.status(201).send(evento);
+    } catch (error) {
+        return res.status(400).send({error: error});
+    }
+});
+
 /**
  * Elimina un evento con el id especificado
  */
@@ -279,17 +294,22 @@ router.post("/crearEventoCompleto", async (req, res) => {
                 }
                 const reglas = eventoParam.reglas;
                 eventoParam.reglas = [];
-                const evento = new Evento(eventoParam);
-                const response = await evento.save();
                 let sizeReglas = reglas.length;
-                for (let j = 0; j < sizeReglas; j++) {
-                    const regla = new Regla(reglas[j]);
-                    response.reglas.push(await regla.save());
-                    await response.save();
-                }
+                const creador = await Usuario.findOne({ correo: req.body.creador });
                 size = usuarios.length;
                 for (let i = 0; i < size; i++) {
                     const usuario = usuarios[i];
+                    const evento = new Evento(eventoParam);
+                    evento.creador=creador;
+                    if(usuario.correo === req.body.creador){
+                        evento.estado="aceptado";
+                    }
+                    const response = await evento.save();
+                    for (let j = 0; j < sizeReglas; j++) {
+                        const regla = new Regla(reglas[j]);
+                        response.reglas.push(await regla.save());
+                        await response.save();
+                    }
                     usuario.eventos.push(response);
                     await usuario.save();
                 }

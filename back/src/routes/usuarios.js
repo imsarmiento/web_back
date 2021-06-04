@@ -353,7 +353,7 @@ router.post("/disponibilidad", async (req, res) => {
  */
 router.get("/:id/eventos", async (req, res) => {
   try {
-    const usuario = await Usuario.findById(req.params.id).populate("eventos");
+    const usuario = await Usuario.findById(req.params.id).populate({path:"eventos",populate:{path : 'creador'}});
     if (!usuario) {
       return res
         .status(404)

@@ -10,7 +10,7 @@ const frecuencias = [
 
 const estados = [
     "aceptado",
-    "rechazado",
+    "pendiente",
 ]
 
 const eventoSchema = new Schema({
@@ -36,6 +36,11 @@ const eventoSchema = new Schema({
         required: true,
         default: Date.now(),
     },
+    fechaCreacion: {
+        type: Date,
+        required: true,
+        default: Date.now(),
+    },
     frecuencia: {
         type: String,
         trim: true,
@@ -51,12 +56,17 @@ const eventoSchema = new Schema({
         type: String,
         trim: true,
         required: true,
+        default: "pendiente",
         validate(value) {
             isValid = estados.includes(value);
             if (!isValid) {
                 throw new Error("Estado invalido");
             }
         },
+    },
+    creador: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Usuario",
     },
     zonaHoraria: {
         type: String,
